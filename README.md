@@ -7,3 +7,6 @@ To execute data collection pipeline:
 3. Run CyKit.ps1 
 4. Run Acquisition Server 
 5. Run Designer
+
+To acquire labels: 
+1. Run labeler.py, ensuring the order of prompts is copied from the Lua script
