@@ -17,11 +17,6 @@ function initialize(box)
 	
 	sequence = {
 		OVTK_StimulationId_Label_01,
-		OVTK_StimulationId_Label_02,
-		OVTK_StimulationId_Label_01,
-		OVTK_StimulationId_Label_10,
-		OVTK_StimulationId_Label_14,
-		OVTK_StimulationId_Label_0F
 	}
 
 	--[[

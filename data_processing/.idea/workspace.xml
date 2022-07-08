@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="" />
+    <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../OpenVibe_Acquisition_Server.lnk" beforeDir="false" afterPath="$PROJECT_DIR$/../OpenVibe_Acquisition_Server.lnk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OpenVibe_Designer.lnk" beforeDir="false" afterPath="$PROJECT_DIR$/../OpenVibe_Designer.lnk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make_my_features.py" beforeDir="false" afterPath="$PROJECT_DIR$/make_my_features.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../experiment-timeline.lua" beforeDir="false" afterPath="$PROJECT_DIR$/../experiment-timeline.lua" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_scenario.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../my_scenario.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/thinking_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/articulators.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/resting.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/speaking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/speaking.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/stimuli.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../output/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/thinking.csv" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -43,7 +56,7 @@
       <recent name="C:\apps\diss\eeg_setup\data_processing" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.data_visualisation">
+  <component name="RunManager" selected="Python.make_my_features (1)">
     <configuration name="data_visualisation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="data_processing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -151,8 +164,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.make_my_features (1)" />
+        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.make_my_features" />
         <item itemvalue="Python.feis_svm_features" />
         <item itemvalue="Python.labeler" />
