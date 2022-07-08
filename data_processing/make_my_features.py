@@ -215,8 +215,8 @@ def make_and_save_features(experiment, features_dir):
         epoch = combined_features(epoch)
         epochs.append(epoch)
 
-    epochs = pd.DataFrame(epochs)
-    epochs.to_csv(Path(features_dir + "/" + experiment.stem + "/features.csv"), index=False)
+    epochs = np.array(epochs, dtype=np.float32)
+    np.save(Path(features_dir + "/" + experiment.stem + "/" + "features"), epochs)
 
 
 if __name__ == '__main__':
