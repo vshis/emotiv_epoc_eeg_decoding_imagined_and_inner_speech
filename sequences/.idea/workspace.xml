@@ -2,9 +2,48 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71e98fed-cf2d-4207-b707-ae0772aab911" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/sequence_randomiser.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sequences.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequence_randomiser.py" beforeDir="false" afterPath="$PROJECT_DIR$/sequence_randomiser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_00.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_01.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_02.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_03.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_04.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_05.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_06.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_07.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_08.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_09.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_10.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_11.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_12.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_13.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_14.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_15.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_16.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_17.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_18.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_imagined_19.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_00.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_01.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_02.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_03.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_04.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_05.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_06.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_07.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_08.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_09.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_10.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_11.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_12.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_13.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_14.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_15.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_16.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_17.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_18.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sequences/sequence_inner_19.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
