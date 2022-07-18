@@ -8,15 +8,16 @@ function initialize(box)
 	
 	-- when changing timings, remember to change them in the corresponding epoching boxes too
 	baseline_duration = 5  -- before the whole experiment begins. default: 5
-	cue_duration = 5  -- image of phoneme. default: 5
-	prepare_articulators_duration = 2  -- prepare articulators. default: 2
-	thinking_duration = 5  -- blank white screen. default: 5
-	speaking_duration = 5  -- mouth. default: 5
-	rest_duration = 5  -- rest. default: 5
+	cue_duration = 3  -- image of phoneme. default: 5
+	prepare_articulators_duration = 1  -- prepare articulators. default: 2
+	thinking_duration = 3  -- blank white screen. default: 5
+	--speaking_duration = 5  -- speaking. default: 5
+	rest_duration = 3  -- rest. default: 5
 	post_trial_duration = 1  -- before the next phoneme is displayed. default: 1
 	
 	sequence = {
 		OVTK_StimulationId_Label_01,
+		OVTK_StimulationId_Label_01
 	}
 
 	--[[
@@ -77,8 +78,8 @@ function process(box)
 		t = t + thinking_duration
 		
 		--speaking
-		box:send_stimulation(1, OVTK_GDF_Tongue, t, 0)
-		t = t + speaking_duration
+		--box:send_stimulation(1, OVTK_GDF_Tongue, t, 0)
+		--t = t + speaking_duration
 		
 		--rest
 		box:send_stimulation(1, OVTK_StimulationId_RestStart, t, 0)
