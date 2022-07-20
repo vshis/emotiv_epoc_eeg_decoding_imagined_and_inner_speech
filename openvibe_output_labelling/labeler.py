@@ -103,13 +103,12 @@ if __name__ == '__main__':
     OVTK_StimulationId_Label_18 = "OVTK_StimulationId_Label_18"
     OVTK_StimulationId_Label_19 = "OVTK_StimulationId_Label_19"
 
-    # copy sequence from OpenVibe Designer Lua script
-    sequence = (OVTK_StimulationId_Label_01,
-                OVTK_StimulationId_Label_02,
-                OVTK_StimulationId_Label_01,
-                OVTK_StimulationId_Label_10,
-                OVTK_StimulationId_Label_14,
-                OVTK_StimulationId_Label_0F)
+    # ensure correct sequence in the cur_sequence.txt file
+    with open("cur_sequences.txt", "r") as file:
+        sequence = []
+        for line in file:
+            line_stripped = line.strip(',\n')
+            sequence.append(line_stripped)
 
     labeler = Labeler(sequence=sequence, openvibe_output_path="../output/")
     labeler.label_csvs()
