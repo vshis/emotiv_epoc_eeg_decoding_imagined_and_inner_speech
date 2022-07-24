@@ -2,19 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0328dd0a-676e-46cb-9146-3b48b54a03a2" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../Emotiv BrainViz.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../experiment-timeline.lua" beforeDir="false" afterPath="$PROJECT_DIR$/../experiment-timeline.lua" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/labeler.py" beforeDir="false" afterPath="$PROJECT_DIR$/labeler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_labelled/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/output_labelled/articulators_labelled.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_labelled/resting_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/output_labelled/resting_labelled.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_labelled/speaking_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_labelled/stimuli_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/output_labelled/stimuli_labelled.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_labelled/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/output_labelled/thinking_labelled.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/articulators.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/resting.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/stimuli.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../output/thinking.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/articulators.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/resting.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/stimuli.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/thinking.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/articulators.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/resting.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/stimuli.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/thinking.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/articulators.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/resting.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/stimuli.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/thinking.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
