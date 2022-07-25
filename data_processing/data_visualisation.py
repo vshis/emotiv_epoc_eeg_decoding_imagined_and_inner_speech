@@ -19,7 +19,7 @@ def plot_figs(directory):
         plt.show()
 
 
-directory = Path("../output")
+directory = Path("../openvibe_output")
 plot_figs(directory)
 """
 for file in directory.glob('thinking.csv'):
