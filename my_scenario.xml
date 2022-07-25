@@ -1108,7 +1108,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Filename</Name>
 					<DefaultValue>record-[$core{date}-$core{time}].csv</DefaultValue>
-					<Value>C:/apps/diss/eeg_setup/output/stimuli.csv</Value>
+					<Value>C:/apps/diss/eeg_setup/openvibe_output/stimuli.csv</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>
@@ -1179,7 +1179,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Filename</Name>
 					<DefaultValue>record-[$core{date}-$core{time}].csv</DefaultValue>
-					<Value>C:/apps/diss/eeg_setup/output/thinking.csv</Value>
+					<Value>C:/apps/diss/eeg_setup/openvibe_output/thinking.csv</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>
@@ -1250,7 +1250,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Filename</Name>
 					<DefaultValue>record-[$core{date}-$core{time}].csv</DefaultValue>
-					<Value>C:/apps/diss/eeg_setup/output/resting.csv</Value>
+					<Value>C:/apps/diss/eeg_setup/openvibe_output/resting.csv</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>
@@ -1321,7 +1321,7 @@
 					<TypeIdentifier>(0x330306dd, 0x74a95f98)</TypeIdentifier>
 					<Name>Filename</Name>
 					<DefaultValue>record-[$core{date}-$core{time}].csv</DefaultValue>
-					<Value>C:/apps/diss/eeg_setup/output/articulators.csv</Value>
+					<Value>C:/apps/diss/eeg_setup/openvibe_output/articulators.csv</Value>
 					<Modifiability>false</Modifiability>
 				</Setting>
 				<Setting>

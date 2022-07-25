@@ -4,15 +4,28 @@ import mne
 from pathlib import Path
 
 
-def load_data(filepath: str, verbose=False):
+def load_data(filepath: str, verbose=False, data_type='feis'):
     """
     This function is configured for raw FEIS data. Configure the function for data collected from other sources.
+    :param data_type: feis (256Hz) or my (128Hz) data
     :param verbose: show imported data info
     :param filepath: path to the file of interest
     :return: Raw MNE object of the data
     """
+    data_types = ['feis', 'my']
+    if data_type not in data_types:
+        raise ValueError("Invalid data type. Expected on of: %s" % data_types)
+
     df = pd.read_csv(Path(filepath))
-    channels_df = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)  # FEIS data
+
+    if data_type == 'feis':  # FEIS data
+        channels_df = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)
+        sfreq = 256  # Hz
+    elif data_type == 'my':  # my data LABELED
+        channels_df = df.drop(labels=['Time:128Hz', 'Epoch', 'Event Id', 'Event Date', 'Event Duration'], axis=1)
+        sfreq = 128  # Hz
+    else:
+        return
     channels_list = []
     for channel in channels_df.columns:
         channel_np = channels_df[channel].to_numpy()
@@ -20,7 +33,6 @@ def load_data(filepath: str, verbose=False):
 
     channels_np = np.array(channels_list)
 
-    sfreq = 256  # Hz
     ch_names = list(channels_df.columns)
     ch_types = 'eeg'
     montage_1020 = mne.channels.make_standard_montage('standard_1020')
@@ -45,4 +57,4 @@ if __name__ == '__main__':
     ica.exclude = ['AF3', 'AF4']
     ica.apply(data_mne)
     data_mne.plot(block=True, scalings='auto')
-    #raw_data.plot(block=True, scalings='auto')
+    raw_data.plot(block=True, scalings='auto')
