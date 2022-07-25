@@ -197,7 +197,7 @@ function process(box)
 
 	-- send end for completeness	
 	box:send_stimulation(1, OVTK_GDF_End_Of_Session, t, 0)
-	t = t + 300
+	t = t + 5
 
 	-- used to cause the acquisition scenario to stop and denote final end of file
 	box:send_stimulation(1, OVTK_StimulationId_ExperimentStop, t, 0)

@@ -224,7 +224,7 @@ if __name__ == '__main__':
         Path("features").mkdir()
 
     sampling_frequency = 256
-    experiments_dir = "testing_experiment"
+    experiments_dir = "testing_data"
     features_dir = "features"
 
     experiments_list = list(Path(experiments_dir).glob('*.csv'))
