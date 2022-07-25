@@ -2,51 +2,27 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/mne_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testing_data/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/testing_data/thinking.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_scenario.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../my_scenario.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/openvibe_output_labelling.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/cur_sequence.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/labeler.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/articulators_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/resting_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/stimuli_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labelling/output_labelled/thinking_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../output/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_01/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_01/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_01/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_01/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_02/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_02/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_02/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_02/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_03/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_03/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_03/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/imagined_03/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_01/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_02/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings/participant_01/inner_03/thinking.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_visualisation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/f.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/fleece.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/goose.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/k.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/m.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/n.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/ng.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/p.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/s.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/sh.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/t.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/thought.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/trap.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/v.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/z.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../my_sounds/zh.m4a" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +65,7 @@
       <recent name="C:\apps\diss\eeg_setup\data_processing" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.mne_tests">
+  <component name="RunManager" selected="Python.data_visualisation">
     <configuration name="data_visualisation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="data_processing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -197,8 +173,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.mne_tests" />
         <item itemvalue="Python.data_visualisation" />
+        <item itemvalue="Python.mne_tests" />
         <item itemvalue="Python.make_my_features (1)" />
         <item itemvalue="Python.make_my_features" />
         <item itemvalue="Python.feis_svm_features" />
