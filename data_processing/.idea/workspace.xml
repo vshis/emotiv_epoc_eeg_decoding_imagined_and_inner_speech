@@ -2,27 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_visualisation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/f.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/fleece.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/goose.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/k.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/m.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/n.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/ng.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/p.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/s.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/sh.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/t.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/thought.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/trap.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/v.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/z.m4a" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../my_sounds/zh.m4a" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
