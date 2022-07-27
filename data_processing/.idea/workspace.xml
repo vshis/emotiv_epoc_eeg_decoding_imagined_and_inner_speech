@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/mne_tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output/articulators.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output/articulators.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output/resting.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output/resting.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output/stimuli.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output/stimuli.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output/thinking.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output/thinking.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +50,7 @@
       <recent name="C:\apps\diss\eeg_setup\data_processing" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.data_visualisation">
+  <component name="RunManager" selected="Python.mne_tests">
     <configuration name="data_visualisation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="data_processing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -154,8 +158,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.mne_tests" />
+        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.make_my_features (1)" />
         <item itemvalue="Python.make_my_features" />
         <item itemvalue="Python.feis_svm_features" />
