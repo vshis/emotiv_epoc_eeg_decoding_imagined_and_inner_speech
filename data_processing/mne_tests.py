@@ -2,15 +2,17 @@ import numpy as np
 import pandas as pd
 import mne
 from pathlib import Path
+from autoreject import AutoReject
+from autoreject import Ransac
 
 
-def load_data(filepath: str, verbose=False, data_type='feis'):
+def load_raw_data(filepath: str, verbose=False, data_type='feis'):
     """
     This function is configured for raw FEIS data. Configure the function for data collected from other sources.
     :param data_type: feis (256Hz) or my (128Hz) data
     :param verbose: show imported data info
     :param filepath: path to the file of interest
-    :return: Raw MNE object of the data
+    :return: Raw MNE (mne.io.RawArray) object of the data
     """
     data_types = ['feis', 'my']
     if data_type not in data_types:
@@ -46,32 +48,54 @@ def load_data(filepath: str, verbose=False, data_type='feis'):
     return raw
 
 
-def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str):
-    events = mne.make_fixed_length_events(mne_raw_object, start=0, duration=5.0)
-    epochs_mne = mne.Epochs(mne_raw_object, events)
+def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str, epoch_duration: float):
+    events = mne.make_fixed_length_events(mne_raw_object, id=1, start=0, duration=5.0)
+    event_dict = {'thinking': 1}
+    epochs_mne = mne.Epochs(mne_raw_object,
+                            events,
+                            event_id=event_dict,
+                            preload=True,
+                            baseline=None,
+                            tmin=0, tmax=epoch_duration)
     df = pd.read_csv(Path(filepath))
-    labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max()+1)]
+    labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max())]
     epochs_mne.metadata = pd.DataFrame(data=labels, columns=['Labels'], index=range(len(labels)))
     return epochs_mne
 
 
 if __name__ == '__main__':
     filepath = 'testing_data/thinking.csv'
-    data_mne = load_data(filepath, verbose=False, data_type='feis')
-    #raw_data = data_mne.copy()
-    create_epochs_object(data_mne, filepath)
-
-
-    data_mne.plot(block=True, scalings='auto')
-    data_mne.plot_psd()
-    epochs_mne.plot(scalings='auto')
-    epochs_mne.plot_psd()
-
-    #print(mne.find_events(data_mne, shortest_event=1, initial_event=True, stim_channel='F3'))
-    #ica = mne.preprocessing.ICA(n_components=14, random_state=69, max_iter=800)
+    data_mne = load_raw_data(filepath, verbose=False, data_type='feis')
     #data_mne.filter(l_freq=1., h_freq=None)
-    #data_mne.notch_filter(50)
+    #data_mne.notch_filter(50., trans_bandwidth=4.)
+
+
+    #raw_data = data_mne.copy()
+    epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=5.0)  # FEIS epoch duration!!!
+
+    #data_mne.plot(block=True, scalings='auto')
     #data_mne.plot_psd()
+
+    #epochs_mne.plot(scalings='auto')
+    #epochs_mne.plot_psd()
+
+    rsc = Ransac()
+    ar = AutoReject()
+    epochs_ransac = rsc.fit_transform(epochs_mne)
+    epochs_ar = ar.fit(epochs_mne)
+    epochs_mne.plot_psd()
+    epochs_ransac.plot_psd()
+    epochs_ar.plot_psd()
+    """
+    ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
+    br = mne.set_bipolar_reference(epochs_mne, anode='AF4', cathode='AF3', ch_name='BIPOLAR_REFERENCE')
+    ica.fit(br)
+    eog_indices, eog_scores = ica.find_bads_eog(br, ch_name='BIPOLAR_REFERENCE')
+    ica.exclude = eog_indices
+    br.plot(block=True, scalings='auto')
+    ica.apply(br)
+    br.plot(block=True, scalings='auto')
+"""
     #ica.fit(data_mne, picks='eeg')
     #ica.exclude = ['AF3', 'AF4']
     #ica.apply(data_mne)
