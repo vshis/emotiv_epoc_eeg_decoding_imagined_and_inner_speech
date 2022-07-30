@@ -49,14 +49,14 @@ def load_raw_data(filepath: str, verbose=False, data_type='feis'):
 
 
 def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str, epoch_duration: float):
-    events = mne.make_fixed_length_events(mne_raw_object, id=1, start=0, duration=5.0)
+    events = mne.make_fixed_length_events(mne_raw_object, id=1, start=-2, duration=epoch_duration)
     event_dict = {'thinking': 1}
     epochs_mne = mne.Epochs(mne_raw_object,
                             events,
                             event_id=event_dict,
                             preload=True,
                             baseline=None,
-                            tmin=0, tmax=epoch_duration)
+                            tmin=-2, tmax=epoch_duration)
     df = pd.read_csv(Path(filepath))
     labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max())]
     epochs_mne.metadata = pd.DataFrame(data=labels, columns=['Labels'], index=range(len(labels)))
@@ -66,31 +66,31 @@ def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str, epoch_d
 if __name__ == '__main__':
     filepath = 'testing_data/thinking.csv'
     data_mne = load_raw_data(filepath, verbose=False, data_type='feis')
-    #data_mne.filter(l_freq=1., h_freq=None)
-    #data_mne.notch_filter(50., trans_bandwidth=4.)
-
+    data_mne.filter(l_freq=1., h_freq=None)
+    data_mne.notch_filter(50., trans_bandwidth=4.)
 
     #raw_data = data_mne.copy()
     epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=5.0)  # FEIS epoch duration!!!
 
-    #data_mne.plot(block=True, scalings='auto')
-    #data_mne.plot_psd()
+    epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
 
-    #epochs_mne.plot(scalings='auto')
-    #epochs_mne.plot_psd()
+    ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
 
-    rsc = Ransac()
-    ar = AutoReject()
-    epochs_ransac = rsc.fit_transform(epochs_mne)
-    epochs_ar = ar.fit(epochs_mne)
-    epochs_mne.plot_psd()
-    epochs_ransac.plot_psd()
-    epochs_ar.plot_psd()
+    ar = AutoReject(n_interpolate=[1, 2, 3, 4], random_state=69, n_jobs=1, verbose=True)
+    ar.fit(epochs_mne)
+    epochs_ar, reject_log = ar.transform(epochs_mne, return_log=True)
+
+    ica.fit(epochs_mne[~reject_log.bad_epochs])
+    ica.plot_components()
+    print(ica.get_components())
+    #ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
+    #ica.fit(epochs_mne[~reject_log.bad_epochs])
+    # do ica fit back onto raw data after AR
     """
     ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
     br = mne.set_bipolar_reference(epochs_mne, anode='AF4', cathode='AF3', ch_name='BIPOLAR_REFERENCE')
     ica.fit(br)
-    eog_indices, eog_scores = ica.find_bads_eog(br, ch_name='BIPOLAR_REFERENCE')
+    
     ica.exclude = eog_indices
     br.plot(block=True, scalings='auto')
     ica.apply(br)
