@@ -41,7 +41,7 @@ def load_raw_data(filepath: str, verbose=False, data_type='feis'):
 
     info = mne.create_info(ch_names, sfreq, ch_types)  # Raw MNE objects must have associated info with them
 
-    raw = mne.io.RawArray(channels_np, info)  # create Raw MNE object of the parsed data
+    raw = mne.io.RawArray(channels_np, info)  # create Raw MNE object from NumPy array
     raw.set_montage(montage_1020)
     if verbose:
         print(raw.info)
@@ -72,25 +72,40 @@ if __name__ == '__main__':
     #raw_data = data_mne.copy()
     epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=5.0)  # FEIS epoch duration!!!
 
-    epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
+    #epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
 
-    ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
+    ica = mne.preprocessing.ICA(n_components=14, random_state=69, max_iter=800)
+    #br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
+    #br.plot(block=True, scalings='auto')
 
     ar = AutoReject(n_interpolate=[1, 2, 3, 4], random_state=69, n_jobs=1, verbose=True)
     ar.fit(epochs_mne)
     epochs_ar, reject_log = ar.transform(epochs_mne, return_log=True)
 
     ica.fit(epochs_mne[~reject_log.bad_epochs])
-    ica.plot_components()
-    print(ica.get_components())
+
+    #epochs_mne.plot(block=True, scalings=dict(eeg=150))
+    eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(epochs_mne, ch_name='AF3')
+    eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(epochs_mne, ch_name='AF4')
+    ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
+    print(f"ica.exclude contents: {ica.exclude}")
+    ica.apply(epochs_mne, exclude=ica.exclude)
+    epochs_mne.plot(block=True, scalings=dict(eeg=150))
+    #ar = AutoReject(n_interpolate=[1, 2, 3, 4], random_state=69, n_jobs=1, verbose=True)
+    #ar.fit(epochs_mne)
+    #epochs_ar, reject_log = ar.transform(epochs_mne, return_log=True)
+
+    #ica.fit(epochs_mne)
+    #epochs_mne.plot(block=True, scalings='auto')
+    #ica.apply(epochs_mne)
+    #epochs_mne.plot(block=True, scalings='auto')
     #ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
     #ica.fit(epochs_mne[~reject_log.bad_epochs])
     # do ica fit back onto raw data after AR
     """
     ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
-    br = mne.set_bipolar_reference(epochs_mne, anode='AF4', cathode='AF3', ch_name='BIPOLAR_REFERENCE')
+    br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
     ica.fit(br)
-    
     ica.exclude = eog_indices
     br.plot(block=True, scalings='auto')
     ica.apply(br)
