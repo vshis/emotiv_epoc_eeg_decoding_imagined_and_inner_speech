@@ -6,6 +6,10 @@ from autoreject import AutoReject
 from autoreject import Ransac
 
 
+SAMPLING_FREQUENCY = 256  # hz
+EPOCH_DURATION = 5.0  # seconds
+
+
 def load_raw_data(filepath: str, verbose=False, data_type='feis'):
     """
     This function is configured for raw FEIS data. Configure the function for data collected from other sources.
@@ -22,16 +26,13 @@ def load_raw_data(filepath: str, verbose=False, data_type='feis'):
 
     if data_type == 'feis':  # FEIS data
         channels_df = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)
-        sfreq = 256  # Hz
     elif data_type == 'my':  # my data LABELED
         channels_df = df.drop(labels=['Time:128Hz', 'Epoch', 'Label', 'Stage'], axis=1)
-        sfreq = 128  # Hz
     else:
         return
-    channels_list = []
-    for channel in channels_df.columns:
-        channel_np = channels_df[channel].to_numpy()
-        channels_list.append(channel_np)
+    sfreq = SAMPLING_FREQUENCY  # Hz
+
+    channels_list = [channels_df[channel].to_numpy() for channel in channels_df.columns]
 
     channels_np = np.array(channels_list)
 
@@ -63,15 +64,41 @@ def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str, epoch_d
     return epochs_mne
 
 
+def filter_raw(raw_data: mne.io.RawArray):
+    """
+    High passes data over 1 Hz and notch filters at 50 Hz with 4 Hz bandwidth
+    :param raw_data: instance of mne.io.RawArray
+    :return: self, modifies RawArray directly
+    """
+    raw_data.filter(l_freq=1., h_freq=None)
+    raw_data.notch_filter(50., trans_bandwidth=4.)
+
+
 if __name__ == '__main__':
-    filepath = 'testing_data/thinking.csv'
-    data_mne = load_raw_data(filepath, verbose=False, data_type='feis')
-    data_mne.filter(l_freq=1., h_freq=None)
-    data_mne.notch_filter(50., trans_bandwidth=4.)
+    filepath = 'testing_data/thinking.csv'  # location of the file of interest
+    data_mne = load_raw_data(filepath, verbose=False, data_type='feis')  # loads data from csv to mne.io.RawArray
+    filter_raw(data_mne)  # notch filter and high pass
+    epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=EPOCH_DURATION)
 
-    #raw_data = data_mne.copy()
-    epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=5.0)  # FEIS epoch duration!!!
+    epochs_data_3d = epochs_mne.get_data()
 
+    # reconstructing epochs data from 3D array of (epochs, channels, data) to 2D (channels, epochs * data)
+    # also deleting first 2 seconds (2 * sampling freq) of data from the beginning of each epoch
+    # as 2 seconds were added to each epoch earlier, it is fictitious data that we want to remove, so that each epoch
+    # is 5 seconds long
+    epochs_reshaped_list = [np.delete(epochs_data_3d[epoch_index], range(2 * SAMPLING_FREQUENCY + 1), axis=1)
+                            for epoch_index
+                            in range(epochs_data_3d.shape[0])]
+
+    epochs_data_2d = np.concatenate(epochs_reshaped_list, axis=1)
+    print(epochs_data_2d[0])
+    #epochs_data_2d = epochs_data_2d.reshape((epochs_data_2d.shape[1], epochs_data_2d.shape[0]))
+
+    df = pd.DataFrame(epochs_data_2d,
+                      columns=['F3', 'FC5',	'AF3', 'F7', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', 'F8', 'AF4', 'FC6', 'F4'])
+    print(df)
+
+"""
     #epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
 
     ica = mne.preprocessing.ICA(n_components=14, random_state=69, max_iter=800)
@@ -90,11 +117,9 @@ if __name__ == '__main__':
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
     print(f"ica.exclude contents: {ica.exclude}")
     ica.apply(epochs_mne, exclude=ica.exclude)
-    epochs_mne.plot(block=True, scalings=dict(eeg=150))
-    #ar = AutoReject(n_interpolate=[1, 2, 3, 4], random_state=69, n_jobs=1, verbose=True)
-    #ar.fit(epochs_mne)
-    #epochs_ar, reject_log = ar.transform(epochs_mne, return_log=True)
-
+    epochs_mne_baseline = epochs_mne.apply_baseline(baseline=(None, None))
+    epochs_mne_baseline.plot(block=True, scalings=dict(eeg=150))
+"""
     #ica.fit(epochs_mne)
     #epochs_mne.plot(block=True, scalings='auto')
     #ica.apply(epochs_mne)
@@ -102,19 +127,5 @@ if __name__ == '__main__':
     #ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
     #ica.fit(epochs_mne[~reject_log.bad_epochs])
     # do ica fit back onto raw data after AR
-    """
-    ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
-    br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
-    ica.fit(br)
-    ica.exclude = eog_indices
-    br.plot(block=True, scalings='auto')
-    ica.apply(br)
-    br.plot(block=True, scalings='auto')
-"""
-    #ica.fit(data_mne, picks='eeg')
-    #ica.exclude = ['AF3', 'AF4']
-    #ica.apply(data_mne)
-    #raw_data.plot(block=True, scalings='auto')
-    #raw_data.plot_psd()
 
 
