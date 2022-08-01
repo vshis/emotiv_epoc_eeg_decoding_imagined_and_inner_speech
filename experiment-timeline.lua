@@ -111,7 +111,7 @@ function initialize(box)
 		OVTK_StimulationId_Label_0C,
 		OVTK_StimulationId_Label_04,
 		OVTK_StimulationId_Label_05,
-		OVTK_StimulationId_Label_0B					
+		OVTK_StimulationId_Label_0B								
 	}
 
 	--[[
