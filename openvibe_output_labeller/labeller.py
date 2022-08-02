@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import warnings
+import merge_files
 
 
 class Labeller:
@@ -128,3 +129,6 @@ if __name__ == '__main__':
     labeller = Labeller(sequences_list=sequence_paths, input_path="../raw_eeg_recordings/",
                         save_dir="../raw_eeg_recordings_labelled/")
     labeller.label_csvs()
+    merge_output_files.search_and_merge(recordings_dir="../raw_eeg_recordings_labelled/",
+                                        save_dir="../raw_eeg_recordings_labelled/",
+                                        delete_source_dirs=True)
