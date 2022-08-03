@@ -3,6 +3,24 @@
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/mne_tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../experiment-timeline.lua" beforeDir="false" afterPath="$PROJECT_DIR$/../experiment-timeline.lua" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/imagined/articulators_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/imagined/resting_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/imagined/stimuli_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/imagined/thinking_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/inner/articulators_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/inner/resting_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/inner/stimuli_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/test_data/participant_00/inner/thinking_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/resting_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/resting_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/stimuli_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/stimuli_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/thinking_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/resting_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/resting_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/stimuli_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/stimuli_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/thinking_labelled.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +63,7 @@
       <recent name="C:\apps\diss\eeg_setup\data_processing" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.data_visualisation">
+  <component name="RunManager" selected="Python.mne_tests">
     <configuration name="data_visualisation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="data_processing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -153,8 +171,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.mne_tests" />
+        <item itemvalue="Python.data_visualisation" />
         <item itemvalue="Python.make_my_features (1)" />
         <item itemvalue="Python.make_my_features" />
         <item itemvalue="Python.feis_svm_features" />
