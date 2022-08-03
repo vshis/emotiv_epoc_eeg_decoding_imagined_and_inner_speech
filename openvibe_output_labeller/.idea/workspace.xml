@@ -2,10 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0328dd0a-676e-46cb-9146-3b48b54a03a2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/merge_files.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../data_processing/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../data_processing/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data_processing/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/../data_processing/mne_tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../experiment-timeline.lua" beforeDir="false" afterPath="$PROJECT_DIR$/../experiment-timeline.lua" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/labeller.py" beforeDir="false" afterPath="$PROJECT_DIR$/labeller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/imagined/articulators_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/imagined/resting_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/imagined/stimuli_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/imagined/thinking_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/inner/articulators_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/inner/resting_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/inner/stimuli_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_00/inner/thinking_labelled.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,6 +137,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="merge_files (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="openvibe_output_labelling" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/merge_files.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="merge_files" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openvibe_output_labelling" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -173,10 +203,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.labeller (1)" />
+        <item itemvalue="Python.merge_files (1)" />
         <item itemvalue="Python.merge_files" />
         <item itemvalue="Python.merge_files" />
         <item itemvalue="Python.label_my_files" />
-        <item itemvalue="Python.labeller" />
       </list>
     </recent_temporary>
   </component>

@@ -82,7 +82,7 @@ class Labeller:
                 sequence = list(sequences_dict.values())[0]
 
             print(f"Labelling file {file_number}: {file}")
-            print(f"Using sequence: {sequence}")
+            #print(f"Using sequence: {sequence}")
 
             # use epochs to set the labels, since the label is consistent throughout an epoch
             for epoch in range(max(file_df['Epoch']) + 1):
@@ -129,6 +129,8 @@ if __name__ == '__main__':
     labeller = Labeller(sequences_list=sequence_paths, input_path="../raw_eeg_recordings/",
                         save_dir="../raw_eeg_recordings_labelled/")
     labeller.label_csvs()
-    merge_output_files.search_and_merge(recordings_dir="../raw_eeg_recordings_labelled/",
-                                        save_dir="../raw_eeg_recordings_labelled/",
-                                        delete_source_dirs=True)
+    recordings_dir = "../raw_eeg_recordings_labelled/"
+    save_dir = "../raw_eeg_recordings_labelled/"
+    merge_files.search_and_merge(recordings_dir=recordings_dir,
+                                 save_dir=save_dir,
+                                 delete_source_dirs=True)
