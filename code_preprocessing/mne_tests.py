@@ -1,3 +1,4 @@
+import typing
 import numpy as np
 import pandas as pd
 import mne
@@ -77,6 +78,8 @@ def filter_raw(raw_data: mne.io.RawArray):
 
 
 def save_mne_epochs_to_csv(epochs_mne: mne.Epochs):
+    """Use epochs.to_data_frame instead"""
+    raise DeprecationWarning("Use epochs.to_data_frame instead")
     epochs_data_np_3d = epochs_mne.get_data()
 
     # reconstructing epochs data from 3D array of (epochs, channels, data) to 2D (channels, epochs * data)
@@ -107,7 +110,7 @@ def save_mne_epochs_to_csv(epochs_mne: mne.Epochs):
     output_df.to_csv('preprocessed.csv', index=False)
 
 
-def preprocess(epochs_mne: mne.Epochs):
+def preprocess_epochs(epochs_mne: mne.Epochs):
     """ AutoReject -> ICA -> Baseline correct """
     #epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
 
@@ -127,7 +130,7 @@ def preprocess(epochs_mne: mne.Epochs):
     eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(epochs_mne, ch_name='AF3')
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(epochs_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
-    ica.exclude = [1, 2, 4]
+    #ica.exclude = [1, 2, 4]
     print(f"ica.exclude contents: {ica.exclude}")
     ica.apply(epochs_mne, exclude=ica.exclude)
     epochs_mne_baseline = epochs_mne.apply_baseline(baseline=(None, None))
@@ -135,18 +138,41 @@ def preprocess(epochs_mne: mne.Epochs):
     return epochs_mne_baseline
 
 
+def preprocess_continuous(raw_mne: mne.io.RawArray):
+    ica = mne.preprocessing.ICA(n_components=14, max_iter=800)
+    ica.fit(raw_mne)
+    eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(raw_mne, ch_name='AF3')
+    eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(raw_mne, ch_name='AF4')
+    ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
+    print(f"ica.exclude contents: {ica.exclude}")
+    ica.apply(raw_mne, exclude=ica.exclude)
+
+
 if __name__ == '__main__':
-    filepath = 'testing_data/thinking.csv'  # location of the file of interest
-    data_mne = load_raw_data(filepath, verbose=False, data_type='feis')  # loads data from csv to mne.io.RawArray
+    filepath = 'testing_data/full_labelled.csv'  # location of the file of interest
+    mne_raw = load_raw_data(filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
+    filter_raw(mne_raw)
+    #preprocess_continuous(data_mne)
+    raw_df = mne_raw.to_data_frame()
+    df = pd.read_csv('testing_data/full_labelled.csv')
+    raw_df['Epoch'] = df['Epoch']
+    raw_df['Label'] = df['Label']
+    raw_df['Stage'] = df['Stage']
+
+    raw_df.drop(raw_df[raw_df['Stage'] != 'thinking'].index, inplace=True)
+    print(raw_df)
+    #data_mne.plot(block=True, scalings=dict(eeg=150))
+
+    """
     filter_raw(data_mne)  # notch filter and high pass
     epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=EPOCH_DURATION)
     #epochs_mne.plot(block=True, scalings=dict(eeg=150))
-    epochs_mne = preprocess(epochs_mne)
+    epochs_mne = preprocess_epochs(epochs_mne)
     epochs_mne.plot(block=True, scalings=dict(eeg=150))
     #save_mne_epochs_to_csv(epochs_mne)
     epochs_mne.crop(tmin=0.0, tmax=EPOCH_DURATION)
     epochs_mne.save('epochs-epo.fif')
-
+"""
     #ica.fit(epochs_mne)
     #epochs_mne.plot(block=True, scalings='auto')
     #ica.apply(epochs_mne)
