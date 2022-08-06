@@ -2,50 +2,28 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../code_classification/feature_extraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Emotiv BrainViz.lnk" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/data_processing.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/data_visualisation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/features/thinking/features.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/features/thinking/labels.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/feis_svm_features.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/make_my_features.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/mne_tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/preprocessed.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/articulators/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/articulators/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/articulators/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/full_eeg/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/full_eeg/speaking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/full_eeg/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/full_eeg/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/resting/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/resting/speaking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/resting/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/resting/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/speaking/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/speaking/speaking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/speaking/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/speaking/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/stimuli/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/stimuli/speaking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/stimuli/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/stimuli/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/thinking/labels.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/thinking/speaking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/thinking/stimuli.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/svm_features/thinking/thinking.npy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/testing_data/thinking.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/testing_data/thinking_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../data_processing/testing_data/thinking_my.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../feis_experiment_scenario.mxs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../oalinst.exe" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/../label_merge_combine/combine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/mne_tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/openvibe_output_labelling.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/merge_files.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/articulators_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/resting_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/stimuli_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/thinking_labelled.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/sequence.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/articulators.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/resting.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/stimuli.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/thinking.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
