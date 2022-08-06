@@ -2,28 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0328dd0a-676e-46cb-9146-3b48b54a03a2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/combine.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../code_preprocessing/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../code_preprocessing/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_preprocessing/data_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/../code_preprocessing/data_visualisation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_preprocessing/epochs-epo.fif" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../code_preprocessing/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/../code_preprocessing/mne_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/openvibe_output_labelling.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/label_my_files.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/labeller.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/merge_files.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/articulators_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/resting_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/stimuli_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/labelled/sample_data_for_label_my_files_script/to_label/thinking_labelled.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/sequence.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/articulators.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/resting.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/stimuli.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../openvibe_output_labeller/sample_data_for_label_my_files_script/to_label/thinking.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test_data/articulators_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/full_labelled.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/participant_3_data.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/resting_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test_data/resting_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/stimuli_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test_data/stimuli_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_data/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test_data/thinking_labelled.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

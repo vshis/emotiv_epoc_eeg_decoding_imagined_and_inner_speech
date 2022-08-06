@@ -1,5 +1,6 @@
 import typing
 import numpy as np
+import pandas
 import pandas as pd
 import mne
 from itertools import chain
@@ -7,25 +8,32 @@ from pathlib import Path
 from autoreject import AutoReject
 from autoreject import Ransac
 
-
 SAMPLING_FREQUENCY = 256  # hz
-EPOCH_DURATION = 5.0  # seconds
+EPOCH_DURATION = 3.0  # seconds
 COLUMNS = ['F3', 'FC5', 'AF3', 'F7', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', 'F8', 'AF4', 'FC6', 'F4']
 
 
-def load_raw_data(filepath: str, verbose=False, data_type='feis'):
+def load_raw_data(filepath: str = None, pre_loaded_df: pd.DataFrame = None, verbose=False, data_type='feis'):
     """
-    This function is configured for raw FEIS data. Configure the function for data collected from other sources.
-    :param data_type: feis (256Hz) or my (128Hz) data
-    :param verbose: show imported data info
-    :param filepath: path to the file of interest
+    Loads in data as pandas DataFrame (or directly accepts a preloaded DataFrame). Returns mne.io.RawArray object with
+    10-20 montage.
+    :param filepath: path to the file of interest. Default=None.
+    :param pre_loaded_df: parse a pre-loaded dataframe to the function instead of a filepath. Default=None. By default,
+    filepath will be checked before pre_loaded_df is.
+    :param data_type: feis (256Hz) or my (128Hz) data. Default='feis'
+    :param verbose: show imported data info. Default=False
     :return: Raw MNE (mne.io.RawArray) object of the data
     """
     data_types = ['feis', 'my']
     if data_type not in data_types:
-        raise ValueError("Invalid data type. Expected on of: %s" % data_types)
+        raise ValueError("Invalid data type. Expected one of: %s" % data_types)
 
-    df = pd.read_csv(Path(filepath))
+    if filepath is not None:
+        df = pd.read_csv(Path(filepath))
+    elif pre_loaded_df is not None:
+        df = pre_loaded_df
+    else:
+        raise ValueError("Either a filepath to a csv file or a preloaded pandas dataframe is required.")
 
     if data_type == 'feis':  # FEIS data
         channels_df = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)
@@ -44,7 +52,6 @@ def load_raw_data(filepath: str, verbose=False, data_type='feis'):
     montage_1020 = mne.channels.make_standard_montage('standard_1020')
 
     info = mne.create_info(ch_names, sfreq, ch_types)  # Raw MNE objects must have associated info with them
-
     raw = mne.io.RawArray(channels_np, info)  # create Raw MNE object from NumPy array
     raw.set_montage(montage_1020)
     if verbose:
@@ -52,16 +59,27 @@ def load_raw_data(filepath: str, verbose=False, data_type='feis'):
     return raw
 
 
-def create_epochs_object(mne_raw_object: mne.io.RawArray, filepath: str, epoch_duration: float):
+def create_epochs_object(mne_raw_object: mne.io.RawArray, epoch_duration: float,
+                         filepath: str = None, pre_loaded_df: pd.DataFrame = None):
+    """
+    Filepath required again as some epochs may be dropped when creating Epochs object.
+    Filepath gets checked for before pre loaded df.
+    """
     events = mne.make_fixed_length_events(mne_raw_object, id=1, start=-1, duration=epoch_duration)
     event_dict = {'thinking': 1}
     epochs_mne = mne.Epochs(mne_raw_object,
                             events,
                             event_id=event_dict,
                             preload=True,
-                            baseline=None,
                             tmin=-1, tmax=epoch_duration)
-    df = pd.read_csv(Path(filepath))
+
+    if filepath is not None:
+        df = pd.read_csv(Path(filepath))
+    elif pre_loaded_df is not None:
+        df = pre_loaded_df
+    else:
+        raise ValueError("Either a filepath to a csv file or a preloaded pandas dataframe is required.")
+
     labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max())]
     epochs_mne.metadata = pd.DataFrame(data=labels, columns=['Labels'], index=range(len(labels)))
     return epochs_mne
@@ -74,49 +92,29 @@ def filter_raw(raw_data: mne.io.RawArray):
     :return: self, modifies RawArray directly
     """
     raw_data.filter(l_freq=1., h_freq=None)
-    #raw_data.notch_filter(50., trans_bandwidth=4.)
+    # raw_data.notch_filter(50., trans_bandwidth=4.)
 
 
 def save_mne_epochs_to_csv(epochs_mne: mne.Epochs):
     """Use epochs.to_data_frame instead"""
-    raise DeprecationWarning("Use epochs.to_data_frame instead")
-    epochs_data_np_3d = epochs_mne.get_data()
-
-    # reconstructing epochs data from 3D array of (epochs, channels, data) to 2D (channels, epochs * data)
-    # also deleting first 2 seconds (2 * sampling freq) of data from the beginning of each epoch
-    # as 2 seconds were added to each epoch earlier, it is fictitious data that we want to remove, so that each epoch
-    # is 5 seconds long
-    epochs_reshaped_list = [np.delete(epochs_data_np_3d[epoch_index], range(SAMPLING_FREQUENCY + 1), axis=1)
-                            for epoch_index
-                            in range(epochs_data_np_3d.shape[0])]
-
-    epochs_data_np_2d = np.concatenate(epochs_reshaped_list, axis=1)
-
-    output_df = pd.DataFrame()
+    df = epochs_mne.to_data_frame()
+    df.drop(labels=['time', 'condition'], axis=1, inplace=True)
+    df['epoch'] = df['epoch'] - 1
+    df.rename({'epoch': 'Epoch'}, axis=1, inplace=True)
     labels_df = epochs_mne.metadata['Labels']
-
-    labels_list = [[label] * int(SAMPLING_FREQUENCY * EPOCH_DURATION) for label in labels_df]
+    labels_list = [[label] * int(SAMPLING_FREQUENCY * EPOCH_DURATION + 1) for label in labels_df]
     labels_list = list(chain.from_iterable(labels_list))
-
-    epochs_numbers_list = [[epoch_number] * int(SAMPLING_FREQUENCY * EPOCH_DURATION)
-                           for epoch_number in range(len(labels_df))]
-    epochs_numbers_list = list(chain.from_iterable(epochs_numbers_list))
-    output_df['Epoch'] = epochs_numbers_list
-
-    for index, column in enumerate(COLUMNS):
-        output_df[column] = epochs_data_np_2d[index]
-
-    output_df['Label'] = labels_list
-    output_df.to_csv('preprocessed.csv', index=False)
+    df['Label'] = labels_list
+    df.to_csv('preprocessed.csv', index=False)
 
 
 def preprocess_epochs(epochs_mne: mne.Epochs):
     """ AutoReject -> ICA -> Baseline correct """
-    #epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
+    # epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
 
     ica = mne.preprocessing.ICA(n_components=14, max_iter=800)
-    #br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
-    #br.plot(block=True, scalings='auto')
+    # br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
+    # br.plot(block=True, scalings='auto')
 
     ar = AutoReject(n_interpolate=[1, 2, 3, 4], n_jobs=1, verbose=True)
     ar.fit(epochs_mne)
@@ -124,17 +122,17 @@ def preprocess_epochs(epochs_mne: mne.Epochs):
 
     ica.fit(epochs_mne[~reject_log.bad_epochs])
     print(reject_log.bad_epochs)
-    #ica.fit(epochs_mne)
+    # ica.fit(epochs_mne)
     ica.plot_components()
-    #epochs_mne.plot(block=True, scalings=dict(eeg=150))
+    # epochs_mne.plot(block=True, scalings=dict(eeg=150))
     eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(epochs_mne, ch_name='AF3')
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(epochs_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
-    #ica.exclude = [1, 2, 4]
+    # ica.exclude = [1, 2, 4]
     print(f"ica.exclude contents: {ica.exclude}")
     ica.apply(epochs_mne, exclude=ica.exclude)
     epochs_mne_baseline = epochs_mne.apply_baseline(baseline=(None, None))
-    #epochs_mne_baseline.plot(block=True, scalings=dict(eeg=150))
+    # epochs_mne_baseline.plot(block=True, scalings=dict(eeg=150))
     return epochs_mne_baseline
 
 
@@ -144,24 +142,37 @@ def preprocess_continuous(raw_mne: mne.io.RawArray):
     eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(raw_mne, ch_name='AF3')
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(raw_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
+    ica.exclude = [1, 3]
     print(f"ica.exclude contents: {ica.exclude}")
     ica.apply(raw_mne, exclude=ica.exclude)
 
 
 if __name__ == '__main__':
     filepath = 'testing_data/full_labelled.csv'  # location of the file of interest
-    mne_raw = load_raw_data(filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    filter_raw(mne_raw)
-    #preprocess_continuous(data_mne)
-    raw_df = mne_raw.to_data_frame()
+    raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
+    #raw_mne.plot(block=True, scalings=dict(eeg=150))
+    #filter_raw(raw_mne)  # apply high-pass filter
+    #preprocess_continuous(raw_mne)
+
+    #raw_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_df = raw_mne.to_data_frame()
     df = pd.read_csv('testing_data/full_labelled.csv')
     raw_df['Epoch'] = df['Epoch']
     raw_df['Label'] = df['Label']
     raw_df['Stage'] = df['Stage']
-
+    #raw_mne.plot(block=True, scalings=dict(eeg=150))
     raw_df.drop(raw_df[raw_df['Stage'] != 'thinking'].index, inplace=True)
-    print(raw_df)
-    #data_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_df.drop(labels=['time'], axis=1, inplace=True)
+    thinking_raw_mne = load_raw_data(pre_loaded_df=raw_df, verbose=False, data_type='my')
+
+    #thinking_raw_mne.plot(block=True, scalings=dict(eeg=5000))
+    epochs_mne = create_epochs_object(mne_raw_object=thinking_raw_mne, epoch_duration=EPOCH_DURATION, pre_loaded_df=raw_df)
+
+    #epochs_mne.plot(block=True, scalings=dict(eeg=500000000))
+    epochs_mne.crop(tmin=0.0, tmax=EPOCH_DURATION)  # remove the extra time before saving
+
+    save_mne_epochs_to_csv(epochs_mne)  # save as csv
+    #epochs_mne.save('epochs-epo.fif')  # save as .fif
 
     """
     filter_raw(data_mne)  # notch filter and high pass
@@ -170,13 +181,13 @@ if __name__ == '__main__':
     epochs_mne = preprocess_epochs(epochs_mne)
     epochs_mne.plot(block=True, scalings=dict(eeg=150))
     #save_mne_epochs_to_csv(epochs_mne)
-    epochs_mne.crop(tmin=0.0, tmax=EPOCH_DURATION)
-    epochs_mne.save('epochs-epo.fif')
+    
+    
 """
-    #ica.fit(epochs_mne)
-    #epochs_mne.plot(block=True, scalings='auto')
-    #ica.apply(epochs_mne)
-    #epochs_mne.plot(block=True, scalings='auto')
-    #ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
-    #ica.fit(epochs_mne[~reject_log.bad_epochs])
+    # ica.fit(epochs_mne)
+    # epochs_mne.plot(block=True, scalings='auto')
+    # ica.apply(epochs_mne)
+    # epochs_mne.plot(block=True, scalings='auto')
+    # ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
+    # ica.fit(epochs_mne[~reject_log.bad_epochs])
     # do ica fit back onto raw data after AR
