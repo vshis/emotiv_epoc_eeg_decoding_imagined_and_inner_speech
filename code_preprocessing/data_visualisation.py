@@ -21,8 +21,8 @@ def plot_figs(directory):
 
 
 #directory = Path("../openvibe_output")
-directory = Path("")
-plot_figs(directory)
+#directory = Path("")
+#plot_figs(directory)
 """
 for file in directory.glob('thinking.csv'):
     file_df = pd.read_csv(file)
