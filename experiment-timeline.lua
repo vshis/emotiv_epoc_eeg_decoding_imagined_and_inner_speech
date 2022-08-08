@@ -147,15 +147,6 @@ function initialize(box)
     OVTK_StimulationId_Label_0E : goose
     OVTK_StimulationId_Label_0F : trap
     OVTK_StimulationId_Label_10 : thought
-	OVTK_StimulationId_Label_11 : gnaw
-	OVTK_StimulationId_Label_12 : knew
-	OVTK_StimulationId_Label_13 : pot
-	OVTK_StimulationId_Label_14 : pat
-	OVTK_StimulationId_Label_15 : diy
-	OVTK_StimulationId_Label_16 : tiy
-	OVTK_StimulationId_Label_17 : piy
-	OVTK_StimulationId_Label_18 : uw
-	OVTK_StimulationId_Label_19 : iy
 	--]]
 
 end
