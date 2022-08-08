@@ -1,0 +1,38 @@
+To ensure software version mismatch, installers of the required software are provided in this repository.
+
+--- Required software installation:
+1. Install Emotiv Launcher 
+2. Install OpenVibe 
+3. Unzip CyKit-master to C:\ drive.
+4. Edit CyKit.ps1:
+	a. To set cd to CyKit's Py3 directory
+	b. To point to the python.exe installation on the PC (using Python version 3.8.8)
+5. (Optional) To have sounds working in OpenVibe Designer, install oalinst.exe 
+
+
+--- With OpenViBE Acquisition Server 64bit, change the following settings from default to work for Emotiv Epoc+:
+1. Chande Driver to Generic Raw Telnet Reader.
+2. In Driver Properties: 
+	a. Ensure the correct number of channels (14 for Emotiv EPOC+)
+	b. Ensure the correct sampling frequency (128 Hz or 256 Hz for Emotiv EPOC+)
+	c. Set telnet host name to: localhost
+	d. Set telnet host port to: 5151
+	e. Leave limit speed UNchecked
+	f. Endianness: Big Endian 
+	g. Sample type: 32 bits float
+	h. Skips all at 0
+	i. Change channel names as appropriate (load channelnames file for Emotiv EPOC+ channels)
+3. In Preferences:
+	a. Force Drift Correction
+	b. Leave other settings as default
+
+
+--- To record EEG data with OpenVibe:
+1. Run Emotiv Launcher. 
+2. Run CyKit.ps1 to connect to the Emotiv EPOC+
+3. Run OpenVibe Acquisition Server
+	a. Connect
+	b. Play 
+4. (Optional) Open experiment-timeline.lua script and edit the sequence (sequences used in the study can be found in the sequences folder)
+5. Run OpenVibe Designer. Ensure filepaths for sounds, images and csv file writers are correct. 
+6. Click the run button at the top of Designer to run the experiment. 
