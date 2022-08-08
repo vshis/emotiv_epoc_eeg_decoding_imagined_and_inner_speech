@@ -57,7 +57,7 @@
 		</Box>
 		<Box>
 			<Identifier>(0x00002303, 0x000069c0)</Identifier>
-			<Name>phoneme stimuli</Name>
+			<Name>stimuli</Name>
 			<AlgorithmClassIdentifier>(0x426163d1, 0x324237b0)</AlgorithmClassIdentifier>
 			<Inputs>
 				<Input>
@@ -131,7 +131,7 @@
 		</Box>
 		<Box>
 			<Identifier>(0x00002303, 0x000069c1)</Identifier>
-			<Name>think of speaking</Name>
+			<Name>thinking</Name>
 			<AlgorithmClassIdentifier>(0x426163d1, 0x324237b0)</AlgorithmClassIdentifier>
 			<Inputs>
 				<Input>
@@ -205,7 +205,7 @@
 		</Box>
 		<Box>
 			<Identifier>(0x00002303, 0x000069c3)</Identifier>
-			<Name>rest</Name>
+			<Name>resting</Name>
 			<AlgorithmClassIdentifier>(0x426163d1, 0x324237b0)</AlgorithmClassIdentifier>
 			<Inputs>
 				<Input>
@@ -253,7 +253,7 @@
 				</Attribute>
 				<Attribute>
 					<Identifier>(0x207c9054, 0x3c841b63)</Identifier>
-					<Value>912</Value>
+					<Value>928</Value>
 				</Attribute>
 				<Attribute>
 					<Identifier>(0x4e7b798a, 0x183beafb)</Identifier>
@@ -279,7 +279,7 @@
 		</Box>
 		<Box>
 			<Identifier>(0x00002303, 0x000069c4)</Identifier>
-			<Name>prepare articulators</Name>
+			<Name>preparation</Name>
 			<AlgorithmClassIdentifier>(0x426163d1, 0x324237b0)</AlgorithmClassIdentifier>
 			<Inputs>
 				<Input>
@@ -1282,7 +1282,7 @@
 				</Attribute>
 				<Attribute>
 					<Identifier>(0x207c9054, 0x3c841b63)</Identifier>
-					<Value>912</Value>
+					<Value>928</Value>
 				</Attribute>
 				<Attribute>
 					<Identifier>(0x4e7b798a, 0x183beafb)</Identifier>
@@ -2689,7 +2689,7 @@
 		</Box>
 		<Box>
 			<Identifier>(0x000079ff, 0x00004013)</Identifier>
-			<Name>Timeline generator</Name>
+			<Name>Timeline Generator</Name>
 			<AlgorithmClassIdentifier>(0x0b5a2787, 0x02750621)</AlgorithmClassIdentifier>
 			<Outputs>
 				<Output>
