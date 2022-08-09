@@ -142,37 +142,42 @@ def preprocess_continuous(raw_mne: mne.io.RawArray):
     eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(raw_mne, ch_name='AF3')
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(raw_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
-    ica.exclude = [1, 3]
+    #if len(ica.exclude) == 0:
+    #    raise ValueError("No ica.exclude")
+    ica.exclude = [3]
     print(f"ica.exclude contents: {ica.exclude}")
     ica.apply(raw_mne, exclude=ica.exclude)
 
 
 if __name__ == '__main__':
-    filepath = 'testing_data/full_labelled.csv'  # location of the file of interest
+    filepath = 'testing_data/full_labelled2.csv'  # location of the file of interest
     raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    #raw_mne.plot(block=True, scalings=dict(eeg=150))
-    #filter_raw(raw_mne)  # apply high-pass filter
-    #preprocess_continuous(raw_mne)
+    raw_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_mne.plot_psd()
+    filter_raw(raw_mne)  # apply high-pass filter
+    # scipy for interpolating channel - https://docs.scipy.org/doc/scipy/tutorial/interpolate.html - before ICA
+    preprocess_continuous(raw_mne)
+    # compare ICA data to no-ICA data
 
-    #raw_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_mne.plot(block=True, scalings=dict(eeg=150))
     raw_df = raw_mne.to_data_frame()
     df = pd.read_csv('testing_data/full_labelled.csv')
     raw_df['Epoch'] = df['Epoch']
     raw_df['Label'] = df['Label']
     raw_df['Stage'] = df['Stage']
-    #raw_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_mne.plot(block=True, scalings=dict(eeg=150))
     raw_df.drop(raw_df[raw_df['Stage'] != 'thinking'].index, inplace=True)
     raw_df.drop(labels=['time'], axis=1, inplace=True)
     thinking_raw_mne = load_raw_data(pre_loaded_df=raw_df, verbose=False, data_type='my')
 
-    #thinking_raw_mne.plot(block=True, scalings=dict(eeg=5000))
+    thinking_raw_mne.plot(block=True, scalings=dict(eeg=5000))
     epochs_mne = create_epochs_object(mne_raw_object=thinking_raw_mne, epoch_duration=EPOCH_DURATION, pre_loaded_df=raw_df)
 
-    #epochs_mne.plot(block=True, scalings=dict(eeg=500000000))
+    epochs_mne.plot(block=True, scalings=dict(eeg=500000000))
     epochs_mne.crop(tmin=0.0, tmax=EPOCH_DURATION)  # remove the extra time before saving
 
-    save_mne_epochs_to_csv(epochs_mne)  # save as csv
-    #epochs_mne.save('epochs-epo.fif')  # save as .fif
+    #save_mne_epochs_to_csv(epochs_mne)  # save as csv
+    epochs_mne.save('epochs-epo.fif')  # save as .fif
 
     """
     filter_raw(data_mne)  # notch filter and high pass

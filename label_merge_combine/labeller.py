@@ -1,7 +1,6 @@
 from pathlib import Path
 import pandas as pd
 import warnings
-import merge_files
 
 
 class Labeller:
@@ -82,7 +81,7 @@ class Labeller:
                 sequence = list(sequences_dict.values())[0]
 
             print(f"Labelling file {file_number}: {file}")
-            #print(f"Using sequence: {sequence}")
+            # print(f"Using sequence: {sequence}")
 
             # use epochs to set the labels, since the label is consistent throughout an epoch
             for epoch in range(max(file_df['Epoch']) + 1):
@@ -115,22 +114,27 @@ class Labeller:
         return sequences_dict
 
 
-if __name__ == '__main__':
-    # ensure correct sequences paths are given
-    sequence_imagined_0 = Path('../sequences/sequences/sequence_imagined_0.txt')
-    sequence_imagined_1 = Path('../sequences/sequences/sequence_imagined_1.txt')
-    sequence_imagined_2 = Path('../sequences/sequences/sequence_imagined_2.txt')
-    sequence_inner_0 = Path('../sequences/sequences/sequence_inner_0.txt')
-    sequence_inner_1 = Path('../sequences/sequences/sequence_inner_1.txt')
-    sequence_inner_2 = Path('../sequences/sequences/sequence_inner_2.txt')
-    sequence_paths = [sequence_imagined_0, sequence_imagined_1, sequence_imagined_2,
-                      sequence_inner_0, sequence_inner_1, sequence_inner_2]
+def label_my_file():
+    """
+    See the files in the sample_data_for_label_my_files_script folder for examples of data used
+    To label your own files:
+    1. Set the sequence_path variable to your .txt sequence used in timeline-generator.lua
+    2. Set the input_files_path variable to the folder, to recursively search through for csv files to label
+    3. Set the save_path variable to the folder, to save the labelled data in
+    """
+    # select path to the txt of sequence used in experiment-timeline.lua script that you want to use to label your data
+    sequence_path = 'test_data'  # EDIT THIS
+    # select directory to recursively search in for csv files to label
+    input_files_path = 'test_data'  # EDIT THIS
+    # select directory where labelled files will be saved
+    save_path = 'test_data'  # EDIT THIS
 
-    labeller = Labeller(sequences_list=sequence_paths, input_path="../raw_eeg_recordings/",
-                        save_dir="../raw_eeg_recordings_labelled/")
-    labeller.label_csvs()
-    recordings_dir = "../raw_eeg_recordings_labelled/"
-    save_dir = "../raw_eeg_recordings_labelled/"
-    merge_files.search_and_merge(recordings_dir=recordings_dir,
-                                 save_dir=save_dir,
-                                 delete_source_dirs=True)
+    # DO NOT edit anything below
+    my_labeller = Labeller(sequences_list=[Path(sequence_path)],
+                           input_path=input_files_path,
+                           save_dir=save_path)
+    my_labeller.label_csvs()
+
+
+if __name__ == '__main__':
+    label_my_file()

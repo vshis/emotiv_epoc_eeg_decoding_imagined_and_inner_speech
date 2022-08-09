@@ -2,19 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../label_merge_combine/label_merge_combine.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../code_classification/feature_extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/feature_extraction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_visualisation.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_visualisation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/epochs-epo.fif" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/mne_tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../data_preprocessed/epochs-epo.fif" beforeDir="false" afterPath="$PROJECT_DIR$/../data_preprocessed/epochs-epo.fif" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../label_merge_combine/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../label_merge_combine/combine.py" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/combine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../label_merge_combine/label_my_files.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../label_merge_combine/labeller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/labeller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../label_merge_combine/merge_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/merge.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/test_data/articulators_labelled.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/full_labelled.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/participant_3_data.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/resting_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/test_data/resting_labelled.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/stimuli_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/test_data/stimuli_labelled.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../label_merge_combine/test_data/thinking_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../label_merge_combine/test_data/thinking_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/imagined/articulators_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_02/inner/articulators_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_03/imagined/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_03/imagined/articulators_labelled.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_03/inner/articulators_labelled.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../raw_eeg_recordings_labelled/participant_03/inner/articulators_labelled.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +56,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="ToolWindowRun.ShowToolbar" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
