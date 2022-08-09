@@ -59,6 +59,8 @@ def window_data(epoch_df: pd.DataFrame):
 
 
 if __name__ == '__main__':
+    using_mne_features()
+    """
     filepath = '../data_preprocessed/preprocessed.csv'
     df = pd.read_csv(filepath)
     labels_df = df['Label']
@@ -69,7 +71,7 @@ if __name__ == '__main__':
         epoch = df[df['Epoch'] == epoch_number]
         windows = window_data(epoch)
         raise StopIteration()
-
+"""
 #print(f"Precision: {metrics.precision_score(y_test, y_pred)}")
 #print(f"Recall: {metrics.recall_score(y_test, y_pred)}")
 
