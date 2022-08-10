@@ -7,6 +7,7 @@ from itertools import chain
 from pathlib import Path
 from autoreject import AutoReject
 from autoreject import Ransac
+from scipy.interpolate import interp1d
 
 SAMPLING_FREQUENCY = 256  # hz
 EPOCH_DURATION = 3.0  # seconds
@@ -95,7 +96,7 @@ def filter_raw(raw_data: mne.io.RawArray):
     # raw_data.notch_filter(50., trans_bandwidth=4.)
 
 
-def save_mne_epochs_to_csv(epochs_mne: mne.Epochs):
+def save_mne_epochs_to_csv(epochs_mne: mne.Epochs, save_path: str):
     """Use epochs.to_data_frame instead"""
     df = epochs_mne.to_data_frame()
     df.drop(labels=['time', 'condition'], axis=1, inplace=True)
@@ -105,7 +106,7 @@ def save_mne_epochs_to_csv(epochs_mne: mne.Epochs):
     labels_list = [[label] * int(SAMPLING_FREQUENCY * EPOCH_DURATION + 1) for label in labels_df]
     labels_list = list(chain.from_iterable(labels_list))
     df['Label'] = labels_list
-    df.to_csv('preprocessed.csv', index=False)
+    df.to_csv(f'{save_path}/preprocessed.csv', index=False)
 
 
 def preprocess_epochs(epochs_mne: mne.Epochs):
@@ -137,62 +138,97 @@ def preprocess_epochs(epochs_mne: mne.Epochs):
 
 
 def preprocess_continuous(raw_mne: mne.io.RawArray):
-    ica = mne.preprocessing.ICA(n_components=14, max_iter=800)
+    ica = mne.preprocessing.ICA(n_components=14, max_iter=800, random_state=69)
     ica.fit(raw_mne)
     eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(raw_mne, ch_name='AF3')
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(raw_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
-    #if len(ica.exclude) == 0:
-    #    raise ValueError("No ica.exclude")
-    ica.exclude = [3]
+    # ica.exclude = [2]  # participant 01 imagined
+    ica.exclude = [1]  # participant 01 inner
+    # ica.exclude = [3]  # participant 02 imagined
+    # ica.exclude = [4]  # participant 02 inner
+    # ica.exclude = [4]  # participant 03 imagined
+    # ica.exclude = [5]  # participant 03 inner
+    # ica.exclude = [2]  # participant 04 imagined
+    # ica.exclude = [1]  # participant 04 inner
     print(f"ica.exclude contents: {ica.exclude}")
+    ica.plot_components()
     ica.apply(raw_mne, exclude=ica.exclude)
 
 
-if __name__ == '__main__':
-    filepath = 'testing_data/full_labelled2.csv'  # location of the file of interest
-    raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    raw_mne.plot(block=True, scalings=dict(eeg=150))
-    raw_mne.plot_psd()
-    filter_raw(raw_mne)  # apply high-pass filter
-    # scipy for interpolating channel - https://docs.scipy.org/doc/scipy/tutorial/interpolate.html - before ICA
-    preprocess_continuous(raw_mne)
-    # compare ICA data to no-ICA data
+def interpolate_channel(raw_mne: mne.io.RawArray, channel: str):
+    """Interpolates bad channels. Used for Participant 03 data"""
+    raw_mne.info['bads'].append(channel)
+    raw_mne.interpolate_bads(method=dict(eeg='MNE'))
 
-    raw_mne.plot(block=True, scalings=dict(eeg=150))
+
+def drop_stages(raw_mne: mne.io.RawArray, filepath: str):
+    """Drops all stages except thinking and returns a new mne.io.Raw object with only thinking stages present"""
     raw_df = raw_mne.to_data_frame()
-    df = pd.read_csv('testing_data/full_labelled.csv')
+    df = pd.read_csv(filepath)
     raw_df['Epoch'] = df['Epoch']
     raw_df['Label'] = df['Label']
     raw_df['Stage'] = df['Stage']
-    raw_mne.plot(block=True, scalings=dict(eeg=150))
     raw_df.drop(raw_df[raw_df['Stage'] != 'thinking'].index, inplace=True)
     raw_df.drop(labels=['time'], axis=1, inplace=True)
     thinking_raw_mne = load_raw_data(pre_loaded_df=raw_df, verbose=False, data_type='my')
+    return thinking_raw_mne, raw_df
+
+
+if __name__ == '__main__':
+    # participant 01
+    # imagined
+    # filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_01/imagined/'
+    # inner
+    filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
+    save_path = '../data_preprocessed/participant_01/inner/'
+
+    # participant 02
+    # imagined
+    # filepath = '../raw_eeg_recordings_labelled/participant_02/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_02/imagined/'
+    # inner
+    # filepath = '../raw_eeg_recordings_labelled/participant_02/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_02/inner/'
+
+    # participant 03
+    # imagined
+    # filepath = '../raw_eeg_recordings_labelled/participant_03/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_03/imagined/'
+    # inner
+    # filepath = '../raw_eeg_recordings_labelled/participant_03/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_03/inner/'
+
+    # participant 04
+    # imagined
+    # filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_04/imagined/'
+    # inner
+    # filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_04/inner/'
+
+    raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
+    raw_mne.plot(block=True, scalings=dict(eeg=150))
+
+    # interpolate_channel(raw_mne=raw_mne, channel='T8')  # participant 03 imagined
+    # interpolate_channel(raw_mne=raw_mne, channel='F8')  # participant 01 imagined
+
+    filter_raw(raw_mne)  # apply high-pass filter
+    preprocess_continuous(raw_mne)
+    # compare ICA data to no-ICA data
+
+    raw_mne.plot(block=True, scalings=dict(eeg=150))  # plot raw data after ICA
+
+    thinking_raw_mne, thinking_df = drop_stages(raw_mne=raw_mne, filepath=filepath)  # drop all stages other than think
 
     thinking_raw_mne.plot(block=True, scalings=dict(eeg=5000))
-    epochs_mne = create_epochs_object(mne_raw_object=thinking_raw_mne, epoch_duration=EPOCH_DURATION, pre_loaded_df=raw_df)
+    epochs_mne = create_epochs_object(mne_raw_object=thinking_raw_mne,
+                                      epoch_duration=EPOCH_DURATION,
+                                      pre_loaded_df=thinking_df)
 
     epochs_mne.plot(block=True, scalings=dict(eeg=500000000))
     epochs_mne.crop(tmin=0.0, tmax=EPOCH_DURATION)  # remove the extra time before saving
 
-    #save_mne_epochs_to_csv(epochs_mne)  # save as csv
-    epochs_mne.save('epochs-epo.fif')  # save as .fif
-
-    """
-    filter_raw(data_mne)  # notch filter and high pass
-    epochs_mne = create_epochs_object(data_mne, filepath, epoch_duration=EPOCH_DURATION)
-    #epochs_mne.plot(block=True, scalings=dict(eeg=150))
-    epochs_mne = preprocess_epochs(epochs_mne)
-    epochs_mne.plot(block=True, scalings=dict(eeg=150))
-    #save_mne_epochs_to_csv(epochs_mne)
-    
-    
-"""
-    # ica.fit(epochs_mne)
-    # epochs_mne.plot(block=True, scalings='auto')
-    # ica.apply(epochs_mne)
-    # epochs_mne.plot(block=True, scalings='auto')
-    # ica = mne.preprocessing.ICA(n_components=13, random_state=69, max_iter=800)
-    # ica.fit(epochs_mne[~reject_log.bad_epochs])
-    # do ica fit back onto raw data after AR
+    save_mne_epochs_to_csv(epochs_mne=epochs_mne, save_path=save_path)  # save as csv
+    epochs_mne.save(f'{save_path}/preprocessed-epo.fif')  # save as .fif
