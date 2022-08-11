@@ -1,13 +1,9 @@
-import typing
 import numpy as np
-import pandas
 import pandas as pd
 import mne
 from itertools import chain
 from pathlib import Path
-from autoreject import AutoReject
-from autoreject import Ransac
-from scipy.interpolate import interp1d
+
 
 SAMPLING_FREQUENCY = 256  # hz
 EPOCH_DURATION = 3.0  # seconds
@@ -64,7 +60,7 @@ def create_epochs_object(mne_raw_object: mne.io.RawArray, epoch_duration: float,
                          filepath: str = None, pre_loaded_df: pd.DataFrame = None):
     """
     Filepath required again as some epochs may be dropped when creating Epochs object.
-    Filepath gets checked for before pre loaded df.
+    Filepath gets checked for before preloaded df.
     """
     events = mne.make_fixed_length_events(mne_raw_object, id=1, start=-1, duration=epoch_duration)
     event_dict = {'thinking': 1}
@@ -107,34 +103,6 @@ def save_mne_epochs_to_csv(epochs_mne: mne.Epochs, save_path: str):
     labels_list = list(chain.from_iterable(labels_list))
     df['Label'] = labels_list
     df.to_csv(f'{save_path}/preprocessed.csv', index=False)
-
-
-def preprocess_epochs(epochs_mne: mne.Epochs):
-    """ AutoReject -> ICA -> Baseline correct """
-    # epochs_mne.set_eeg_reference(ref_channels=['AF3', 'AF4'])
-
-    ica = mne.preprocessing.ICA(n_components=14, max_iter=800)
-    # br = mne.set_bipolar_reference(epochs_mne, anode='AF3', cathode='AF4', ch_name='BIPOLAR_REFERENCE')
-    # br.plot(block=True, scalings='auto')
-
-    ar = AutoReject(n_interpolate=[1, 2, 3, 4], n_jobs=1, verbose=True)
-    ar.fit(epochs_mne)
-    epochs_ar, reject_log = ar.transform(epochs_mne, return_log=True)
-
-    ica.fit(epochs_mne[~reject_log.bad_epochs])
-    print(reject_log.bad_epochs)
-    # ica.fit(epochs_mne)
-    ica.plot_components()
-    # epochs_mne.plot(block=True, scalings=dict(eeg=150))
-    eog_indices_af3, eog_scores_af3 = ica.find_bads_eog(epochs_mne, ch_name='AF3')
-    eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(epochs_mne, ch_name='AF4')
-    ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
-    # ica.exclude = [1, 2, 4]
-    print(f"ica.exclude contents: {ica.exclude}")
-    ica.apply(epochs_mne, exclude=ica.exclude)
-    epochs_mne_baseline = epochs_mne.apply_baseline(baseline=(None, None))
-    # epochs_mne_baseline.plot(block=True, scalings=dict(eeg=150))
-    return epochs_mne_baseline
 
 
 def preprocess_continuous(raw_mne: mne.io.RawArray):
