@@ -1,4 +1,3 @@
-import math
 from pathlib import Path
 import antropy
 import scipy.signal
@@ -16,6 +15,7 @@ import cmath
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 SAMPLING_FREQUENCY = 256  # Hz
 EPOCH_DURATION = 3  # seconds
@@ -98,9 +98,9 @@ def feature_windows(epoch_df: pd.DataFrame):
             window_features.append([higuchi,
                                     hurst_exp,
                                     spectral_entropy,
-                                    spectral_power,
+                                    #spectral_power,
                                     phase,
-                                    magnitute
+                                    #magnitute
                                     ])
         window_features = list(chain.from_iterable(window_features))
         five_windows_features.append(window_features)
@@ -109,7 +109,8 @@ def feature_windows(epoch_df: pd.DataFrame):
 
 
 def using_windows():
-    filepath = '../data_preprocessed/participant_02/imagined/preprocessed.csv'
+    #filepath = '../data_preprocessed/participant_02/imagined/preprocessed.csv'
+    filepath = 'binary.csv'
     df = pd.read_csv(filepath)
     labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max() + 1)]
     labels_np = np.empty((0, 1), dtype=str)
@@ -129,12 +130,13 @@ def using_windows():
     features = np.concatenate(features)
 
     rf_adaboost(features, labels)  # 8 - 8.9% accuracy
-    # naive_bayes(features, labels)  # 8.5% accuracy
-    # knn(features, labels)  # 8% accuracy with around 100 neighbors
+    naive_bayes(features, labels)  # 8.5% accuracy
+    knn(features, labels)  # 8% accuracy with around 100 neighbors
 
 
-def rf_adaboost(features, labels):
-    x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.3)
+def rf_adaboost(data, labels):
+    print("Running RF Adaboost")
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.3)
 
     model = AdaBoostClassifier(n_estimators=310, learning_rate=0.3)
     model.fit(x_train, y_train)
@@ -144,8 +146,9 @@ def rf_adaboost(features, labels):
     print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
 
 
-def naive_bayes(features, labels):
-    x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.3)
+def naive_bayes(data, labels):
+    print("Running Naive Bayes")
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.3)
 
     model = GaussianNB()
     model.fit(x_train, y_train)
@@ -154,10 +157,11 @@ def naive_bayes(features, labels):
     print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
 
 
-def knn(features, labels):
-    x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.3)
+def knn(data, labels):
+    print("Running kNN")
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.3)
 
-    n_neighbours = [100, 105, 110, 115]
+    n_neighbours = [i for i in range(1, 101, 5)]
     for k in n_neighbours:
         model = KNeighborsClassifier(n_neighbors=k)
         model.fit(x_train, y_train)
@@ -167,13 +171,17 @@ def knn(features, labels):
         print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
 
 
-"""
+def support_vm(data, labels):
+    print("Running SVM")
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.3)
+
     clf = svm.SVC(kernel='rbf')
 
     clf.fit(x_train, y_train)
 
     y_pred = clf.predict(x_test)
-    print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")"""
+    print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
+
 
 if __name__ == '__main__':
     using_windows()
