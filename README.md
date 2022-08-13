@@ -1,12 +1,9 @@
-# diss
-diss imagined speech
+# An investigation into decoding imagined and inner speech processes from commercial EEG devices
+Repository in support of the University of Bath Computer Science MSc dissertation
 
-To execute data collection pipeline: 
-1. Set up the physical device
-2. Run Emotiv app to check conductivity 
-3. Run CyKit.ps1 
-4. Run Acquisition Server 
-5. Run Designer
+To execute data collection pipeline see the following file: 
 
-To acquire labels: 
-1. Run labeler.py, ensuring the order of prompts is copied from the Lua script
+[Click here for information on how to execute the data collection pipeline](/installers/configuration.txt)
+
+To label raw data: 
+Run label_merge_combine/label_merge_combine.py script, ensuring the _labelled directory is empty 
