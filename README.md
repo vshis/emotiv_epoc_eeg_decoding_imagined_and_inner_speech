@@ -5,8 +5,7 @@ To execute data collection pipeline see the following file:
 
 [Click here for information on how to execute the data collection pipeline](/installers/configuration.txt)
 
-To label raw data: 
-Run label_merge_combine/label_merge_combine.py script, ensuring the _labelled directory is empty 
+To label all raw data in the raw_eeg_recordings directory, run the label_merge_combine/label_merge_combine.py script, ensuring the destination directory (raw_eeg_recordings_labelled by default) for the newly labelled files is empty.
 
 Package versions used:
 * Python 3.8.8
