@@ -88,14 +88,16 @@ def feature_windows(epoch_df: pd.DataFrame):
             hilbert = scipy.signal.hilbert(channel)
 
             # features
-            higuchi = antropy.higuchi_fd(window[column], kmax=10)
-            hurst_exp, c, data = compute_Hc(window[column], kind='change')
-            spectral_entropy = antropy.spectral_entropy(window[column], SAMPLING_FREQUENCY, nperseg=150, method='welch')
+            higuchi = antropy.higuchi_fd(channel, kmax=10)  # higuchi fractal dims
+            katz = antropy.katz_fd(channel)  # katz fractal dims
+            hurst_exp, c, data = compute_Hc(channel, kind='change')  # hurst epxonent
+            spectral_entropy = antropy.spectral_entropy(channel, SAMPLING_FREQUENCY, nperseg=150, method='welch')
             spectral_power = (1 * SAMPLING_FREQUENCY / len(channel)) * np.mean(power_spectral_density)
             phase = cmath.phase(np.mean(hilbert))
             magnitute = np.linalg.norm(np.mean(hilbert))
 
             window_features.append([higuchi,
+                                    #katz,
                                     hurst_exp,
                                     spectral_entropy,
                                     #spectral_power,
@@ -185,31 +187,3 @@ def support_vm(data, labels):
 
 if __name__ == '__main__':
     using_windows()
-
-# print(f"Precision: {metrics.precision_score(y_test, y_pred)}")
-# print(f"Recall: {metrics.recall_score(y_test, y_pred)}")
-
-# datapath = Path('../data_preprocessed/preprocessed.csv')
-# df = pd.read_csv(datapath)
-# labels_df = df['Label']
-# epochs_df = df['Epoch']
-# df_channels = df.drop(labels=['Epoch', 'Label'], axis=1)
-# np_channels = df_channels.to_numpy()
-# print(np_channels.shape)
-# print(signal.welch(np_channels)[1].shape)
-
-"""
-cancer = datasets.load_breast_cancer()
-reshaped = np.reshape(cancer.data, (569, 15, 2))
-print(cancer.target.shape)
-print(reshaped.shape)
-
-x_train, x_test, y_train, y_test = train_test_split(cancer.data, cancer.target, test_size=0.3, random_state=69)
-
-clf = svm.SVC(kernel='linear')
-
-clf.fit(x_train, y_train)
-
-y_pred = clf.predict(x_test)
-print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
-"""
