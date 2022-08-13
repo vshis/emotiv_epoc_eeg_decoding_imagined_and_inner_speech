@@ -79,11 +79,11 @@ def run_algorithms_raw(filepath: str):
     df = pd.read_csv(filepath)
     labels = df['Label']
     data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)
-    lda(data, labels)
-    rf_adaboost(data, labels)
-    #support_vm(data, labels)
-    naive_bayes(data, labels)
-    knn(data, labels)
+    #lda(data, labels)
+    #rf_adaboost(data, labels)
+    support_vm(data, labels)
+    #naive_bayes(data, labels)
+    #knn(data, labels)
 
 
 def run_algorithms_preprocessed(filepath: str):
@@ -111,8 +111,8 @@ def run_algorithms_feis(filepath: str):
 
 
 if __name__ == '__main__':
-    filepath = 'binary_preprocessed.csv'
-    run_algorithms_preprocessed(filepath)
+    #filepath = 'binary_preprocessed.csv'
+    #run_algorithms_preprocessed(filepath)
     """
     print("----------------------------------------------------------------\n"
           "Participant 01 imagined preprocessed\n"
@@ -161,13 +161,13 @@ if __name__ == '__main__':
           "----------------------------------------------------------------")
     filepath = '../data_preprocessed/participant_04/inner/preprocessed.csv'
     run_algorithms_preprocessed(filepath)
-
+"""
     print("----------------------------------------------------------------\n"
           "Participant 01 imagined raw\n"
           "----------------------------------------------------------------")
     filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv'
     run_algorithms_raw(filepath)
-
+    """
     print("----------------------------------------------------------------\n"
           "Participant 01 inner raw\n"
           "----------------------------------------------------------------")
