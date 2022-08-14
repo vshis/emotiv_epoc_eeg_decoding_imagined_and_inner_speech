@@ -21,7 +21,7 @@ def load_raw_data(filepath: str = None, pre_loaded_df: pd.DataFrame = None, verb
     :param verbose: show imported data info. Default=False
     :return: Raw MNE (mne.io.RawArray) object of the data
     """
-    data_types = ['feis', 'my']
+    data_types = ['feis', 'my', 'p00']
     if data_type not in data_types:
         raise ValueError("Invalid data type. Expected one of: %s" % data_types)
 
@@ -34,7 +34,7 @@ def load_raw_data(filepath: str = None, pre_loaded_df: pd.DataFrame = None, verb
 
     if data_type == 'feis':  # FEIS data
         channels_df = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)
-    elif data_type == 'my':  # my data LABELED
+    elif data_type == 'my' or data_type == 'p00':  # my data LABELLED
         channels_df = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)
     else:
         return
@@ -50,7 +50,8 @@ def load_raw_data(filepath: str = None, pre_loaded_df: pd.DataFrame = None, verb
 
     info = mne.create_info(ch_names, sfreq, ch_types)  # Raw MNE objects must have associated info with them
     raw = mne.io.RawArray(channels_np, info)  # create Raw MNE object from NumPy array
-    raw.set_montage(montage_1020)
+    if data_type != 'p00':
+        raw.set_montage(montage_1020)
     if verbose:
         print(raw.info)
     return raw
@@ -144,13 +145,21 @@ def drop_stages(raw_mne: mne.io.RawArray, filepath: str):
 
 
 if __name__ == '__main__':
+    # participant 00
+    # imagined
+    # filepath = '../raw_eeg_recordings_labelled/participant_00/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_00/imagined/'
+    # inner
+    # filepath = '../raw_eeg_recordings_labelled/participant_00/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_00/inner/'
+
     # participant 01
     # imagined
     # filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_01/imagined/'
     # inner
-    filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
-    save_path = '../data_preprocessed/participant_01/inner/'
+    # filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_01/inner/'
 
     # participant 02
     # imagined
@@ -170,14 +179,15 @@ if __name__ == '__main__':
 
     # participant 04
     # imagined
-    # filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
-    # save_path = '../data_preprocessed/participant_04/imagined/'
+    #filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
+    #save_path = '../data_preprocessed/participant_04/imagined/'
     # inner
-    # filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
-    # save_path = '../data_preprocessed/participant_04/inner/'
+    filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
+    save_path = '../data_preprocessed/participant_04/inner/'
 
     raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    raw_mne.plot(block=True, scalings=dict(eeg=150))
+    raw_plot = raw_mne.plot(block=True, scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False, show_options=False)
+    # raw_plot.savefig('plot')
 
     # interpolate_channel(raw_mne=raw_mne, channel='T8')  # participant 03 imagined
     # interpolate_channel(raw_mne=raw_mne, channel='F8')  # participant 01 imagined
