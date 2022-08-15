@@ -1,7 +1,6 @@
 from pathlib import Path
 import antropy
 import scipy.signal
-import torch
 from scipy.signal import periodogram
 from itertools import chain
 import numpy as np
@@ -13,9 +12,6 @@ from hurst import compute_Hc
 import mne
 from mne_features.feature_extraction import extract_features
 import cmath
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import AdaBoostClassifier
@@ -24,77 +20,6 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 SAMPLING_FREQUENCY = 256  # Hz
 EPOCH_DURATION = 3  # seconds
 NUMBER_OF_WINDOWS = 5
-
-
-class CNNModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 16, (1, 3))
-        self.pool = nn.MaxPool2d((1, 2))
-        self.conv2 = nn.Conv2d(16, 16 * 16, (14, 1))
-        self.fc1 = nn.Linear(7 * 14, 32)
-        self.fc2 = nn.Linear(32, 16)
-
-    def forward(self, x):
-        # x shape
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = torch.flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-
-def cnn(data, labels):
-    print("Using CNN")
-
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device {device}")
-
-    data = np.split(data, 319)
-    labels = np.split(labels, 319)
-
-    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.3)
-
-    model = CNNModel()
-    model.to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-
-    for epoch in range(0, 5):
-        print(f"Epoch number {epoch}")
-        for i, inputs in enumerate(x_train, 0):
-            # inputs = inputs.to(device)
-            minibatch_labels = y_train[i]  # .to(device)
-            running_loss = 0.0
-            optimizer.zero_grad()
-
-            outputs = model(inputs)
-            loss = criterion(outputs, minibatch_labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item
-            if i % 50 == 49:
-                print(f"[{epoch}, {i + 1:5d}] loss: {running_loss / 50:.3f}")
-                running_loss = 0.0
-
-    print("finished training")
-
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for i, inputs in enumerate(x_test, 0):
-            inputs = inputs.to(device)
-            minibatch_labels = y_test[i].to(device)
-            outputs = model(inputs)
-
-            _, predicted = torch.max(outputs.data, 1)
-            total += minibatch_labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    print(f"Accuracy: {correct // total}")
 
 
 def using_mne_features():
@@ -185,7 +110,7 @@ def _feature_windows(epoch_df: pd.DataFrame):
     return np.array(five_windows_features)
 
 
-def get_features(filepath: str, save_features: bool = False, savedir: str = None, verbose=True):
+def get_features(filepath: str, savedir: str = None, verbose=True):
     df = pd.read_csv(filepath)
     labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max() + 1)]
     labels_np = np.empty((0, 1), dtype=str)
@@ -205,9 +130,7 @@ def get_features(filepath: str, save_features: bool = False, savedir: str = None
 
     features = np.concatenate(features)
 
-    if save_features is True:
-        if savedir is None:
-            raise ValueError("Provide a savepath for the features")
+    if savedir is not None:
         np.save(file=Path(f"{savedir}features.npy"), arr=features)
         np.save(file=Path(f"{savedir}labels.npy"), arr=labels)
 
@@ -281,8 +204,32 @@ def support_vm(data, labels):
     print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
 
 
+def extract_participants_features():
+    for participant_n in range(1, 5):
+        print(f"Participant {participant_n}...")
+        for speech_type in ['imagined', 'inner']:
+            print(f"Speech type {speech_type}")
+            filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_type}/preprocessed.csv'
+            save_dir = f'features/even_windows/participant_0{participant_n}/{speech_type}/'
+            get_features(filepath=filepath, savedir=save_dir, verbose=False)
+
+
+def extract_features_binary():
+    filepath = f'binary_data/p01_imagined_preprocessed_binary.csv'
+    save_dir = f'features/even_windows/binary/'
+    get_features(filepath=filepath, savedir=save_dir, verbose=False)
+
+
+def extract_features_feis():
+    filepath = f'../../feis_preprocessed/preprocessed.csv'
+
+
 if __name__ == '__main__':
-    filepath = '../data_preprocessed/participant_01/imagined/preprocessed.csv'
-    features = np.load('features.npy')
-    labels = np.load('labels.npy')
-    using_windows(preloaded_features=features, preloaded_labels=labels)
+    #filepath = '../data_preprocessed/participant_01/imagined/preprocessed.csv'
+    #features = np.load('features.npy')
+    #labels = np.load('labels.npy')
+    #using_windows(preloaded_features=features, preloaded_labels=labels)
+
+    #extract_participants_features()
+    extract_features_binary()
+

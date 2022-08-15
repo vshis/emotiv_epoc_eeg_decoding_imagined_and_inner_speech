@@ -4,6 +4,7 @@ from sklearn import metrics
 import pandas as pd
 import numpy as np
 import feature_extraction
+from pathlib import Path
 
 
 def lda(data, labels):
@@ -65,12 +66,21 @@ def run_lda_for_participant(participant_n: int):
         # Features
         print("------------- Features")
         filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_mode}/preprocessed.csv'
-        #features, labels = feature_extraction.get
-        train_accuracy, test_accuracy = run_algorithm(filepath, 'preprocessed')
+        features, labels = feature_extraction.get_features(filepath, verbose=False)
+        train_accuracy, test_accuracy = lda(features, labels)
         accuracies[f'preprocessed_{speech_mode}_train'] = train_accuracy
         accuracies[f'preprocessed_{speech_mode}_test'] = test_accuracy
+
+    df = pd.DataFrame()
+    df['Method'] = 'LDA'
+
+    for header, values in list(accuracies.items()):
+        df[header] = values
+
+    df.to_csv(Path(f'lda_results/participant_0{participant_n}.csv'), index=False)
 
 
 if __name__ == '__main__':
     participants = [i for i in range(1, 5)]
-    exit(0)
+    for participant_n in participants:
+        run_lda_for_participant(participant_n)
