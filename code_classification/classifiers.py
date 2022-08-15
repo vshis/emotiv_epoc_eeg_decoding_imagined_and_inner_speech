@@ -93,7 +93,29 @@ def knn_for_participant(participant_n: int):
     df.to_csv(Path(f'knn_results/participant_0{participant_n}.csv'), index=False)
 
 
+def knn_for_raw_only():
+    speech_modes = ['imagined', 'inner']
+    accuracies = {}
+    for speech_mode in speech_modes:
+        print(f"------------\nSpeech mode {speech_mode}\n------------")
+        filepath = f'../raw_eeg_recordings_labelled/participant_00/{speech_mode}/thinking_labelled.csv'
+        _, train_accuracies, test_accuracies = run_algorithms(filepath, 'knn', data_type='raw')
+        accuracies[f'raw_{speech_mode}_train'] = train_accuracies
+        accuracies[f'raw_{speech_mode}_test'] = test_accuracies
+
+    ks = [1, 5, 13, 37, 101, 445, 845, 1539, 3939]
+
+    df = pd.DataFrame()
+    df['k'] = ks
+
+    for header, values in list(accuracies.items()):
+        df[header] = values
+
+    df.to_csv(Path(f'knn_results/participant_00.csv'), index=False)
+
+
 if __name__ == '__main__':
-    participant_ns = [i for i in range(1, 5)]
-    for participant_n in participant_ns:
-        knn_for_participant(participant_n)
+    #participant_ns = [i for i in range(1, 5)]
+    #for participant_n in participant_ns:
+    #    knn_for_participant(participant_n)
+    knn_for_raw_only()
