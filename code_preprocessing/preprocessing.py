@@ -6,7 +6,7 @@ from itertools import chain
 from pathlib import Path
 
 SAMPLING_FREQUENCY = 256  # hz
-EPOCH_DURATION = 3.0  # seconds
+EPOCH_DURATION = 5.0  # seconds
 COLUMNS = ['F3', 'FC5', 'AF3', 'F7', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', 'F8', 'AF4', 'FC6', 'F4']
 
 
@@ -120,6 +120,7 @@ def preprocess_continuous(raw_mne: mne.io.RawArray):
     # ica.exclude = [5]  # participant 03 inner
     # ica.exclude = [2]  # participant 04 imagined
     # ica.exclude = [1]  # participant 04 inner
+    # ica.exclude = [1]  # feis
     print(f"ica.exclude contents: {ica.exclude}")
     ica.plot_components()
     ica.apply(raw_mne, exclude=ica.exclude)
@@ -182,22 +183,17 @@ if __name__ == '__main__':
     # filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_04/imagined/'
     # inner
-    filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
-    save_path = '../data_preprocessed/participant_04/inner/'
+    # filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_04/inner/'
 
-    raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    plt.rcParams.update({
-        'ytick.labelsize': 'small',
-        'xtick.labelsize': 'small',
-        'axes.labelsize': 'small',
-        'axes.titlesize': 'medium',
-        'grid.color': '0.75',
-        'grid.linestyle': ':',
-    })
-    raw_plot = raw_mne.plot(scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False,
+    # feis
+    filepath = '../../feis-01-full_eeg.csv'
+    save_path = '../../feis_preprocessed/'
+
+    raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='feis')  # loads data from csv to mne.io.RawArray
+    raw_plot = raw_mne.plot(block=True, scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False,
                             show_options=False)
     # raw_plot.savefig('plot')
-    exit(0)
 
     # interpolate_channel(raw_mne=raw_mne, channel='T8')  # participant 03 imagined
     # interpolate_channel(raw_mne=raw_mne, channel='F8')  # participant 01 imagined

@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+authors:
+- family-names: "Shishkin"
+  given-names: "Vladislav"
+title: "An investigation into decoding imagined and inner speech processes from commercial EEG devices"
+version: 1.0.0
+date-released: 2022-08-13
+url: "https://github.com/vshis/emotiv_epoc_eeg_decoding_imagined_and_inner_speech"

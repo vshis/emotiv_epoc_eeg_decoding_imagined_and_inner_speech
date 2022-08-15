@@ -142,7 +142,7 @@ def using_mne_features():
     print(f"Accuracy: {metrics.accuracy_score(y_test, y_pred)}")
 
 
-def feature_windows(epoch_df: pd.DataFrame):
+def _feature_windows(epoch_df: pd.DataFrame):
     channels_df = epoch_df.drop(columns=['Epoch'], axis=1)
     # channels_df.reset_index(drop=True, inplace=True)
     # channels_df.drop(channels_df.tail(1).index, inplace=True)
@@ -185,42 +185,47 @@ def feature_windows(epoch_df: pd.DataFrame):
     return np.array(five_windows_features)
 
 
-def using_windows(filepath: str = None, preloaded_features=None, preloaded_labels=None, save_features_labels=False, savedir=None):
+def get_features(filepath: str, save_features: bool = False, savedir: str = None, verbose=True):
+    df = pd.read_csv(filepath)
+    labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max() + 1)]
+    labels_np = np.empty((0, 1), dtype=str)
+    for label in labels:
+        labels_np = np.append(labels_np, [label] * NUMBER_OF_WINDOWS)
+    labels = labels_np
+    df.drop(columns=['Label'], axis=1, inplace=True)
+
+    number_of_epochs = df['Epoch'].max()
+    features = []
+    for epoch_number in range(number_of_epochs + 1):
+        if verbose:
+            print(f"Extracting features from epoch {epoch_number}/{number_of_epochs}")
+        epoch = df[df['Epoch'] == epoch_number]
+        windows_features = _feature_windows(epoch)
+        features.append(windows_features)
+
+    features = np.concatenate(features)
+
+    if save_features is True:
+        if savedir is None:
+            raise ValueError("Provide a savepath for the features")
+        np.save(file=Path(f"{savedir}features.npy"), arr=features)
+        np.save(file=Path(f"{savedir}labels.npy"), arr=labels)
+
+    return features, labels
+
+
+def using_windows(filepath: str = None, preloaded_features=None, preloaded_labels=None, save_features_labels=False,
+                  savedir=None):
     if filepath is None and preloaded_features is None:
         raise ValueError("Please provide either filepath or preloaded features")
     elif filepath is not None:
-        df = pd.read_csv(filepath)
-        labels = [df.loc[df['Epoch'] == epoch, 'Label'].iloc[0] for epoch in range(df['Epoch'].max() + 1)]
-        labels_np = np.empty((0, 1), dtype=str)
-        for label in labels:
-            labels_np = np.append(labels_np, [label] * NUMBER_OF_WINDOWS)
-        labels = labels_np
-        df.drop(columns=['Label'], axis=1, inplace=True)
-
-        number_of_epochs = df['Epoch'].max()
-        features = []
-        for epoch_number in range(number_of_epochs + 1):
-            print(f"Extracting features from epoch {epoch_number}/{number_of_epochs}")
-            epoch = df[df['Epoch'] == epoch_number]
-            windows_features = feature_windows(epoch)
-            features.append(windows_features)
-
-        features = np.concatenate(features)
-
-        if save_features_labels is True:
-            if savedir is None:
-                raise ValueError("Provide a savepath for the features")
-            np.save(file=Path(f"{savedir}features.npy"), arr=features)
-            np.save(file=Path(f"{savedir}labels.npy"), arr=labels)
+        features, labels = get_features(filepath)
 
     elif preloaded_features is not None and preloaded_labels is not None:
         features = preloaded_features
         labels = preloaded_labels
     else:
         raise ValueError("No conditions are met.")
-
-    cnn(features, labels)
-    return
 
     rf_adaboost(features, labels)  # 8 - 8.9% accuracy
     naive_bayes(features, labels)  # 8.5% accuracy
