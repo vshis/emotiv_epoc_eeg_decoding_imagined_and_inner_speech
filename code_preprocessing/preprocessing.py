@@ -113,7 +113,7 @@ def preprocess_continuous(raw_mne: mne.io.RawArray):
     eog_indices_af4, eog_scores_af4 = ica.find_bads_eog(raw_mne, ch_name='AF4')
     ica.exclude = list(set(eog_indices_af3 + eog_indices_af4))
     # ica.exclude = [2]  # participant 01 imagined
-    ica.exclude = [1]  # participant 01 inner
+    # ica.exclude = [1]  # participant 01 inner
     # ica.exclude = [3]  # participant 02 imagined
     # ica.exclude = [4]  # participant 02 inner
     # ica.exclude = [4]  # participant 03 imagined
@@ -147,7 +147,7 @@ def drop_stages(raw_mne: mne.io.RawArray, filepath: str):
 if __name__ == '__main__':
     # participant 00
     # imagined
-    # filepath = '../raw_eeg_recordings_labelled/participant_00/imagined/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_00/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_00/imagined/'
     # inner
     # filepath = '../raw_eeg_recordings_labelled/participant_00/inner/full_labelled.csv.zip'
@@ -155,26 +155,26 @@ if __name__ == '__main__':
 
     # participant 01
     # imagined
-    # filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_01/imagined/'
     # inner
-    # filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_01/inner/'
 
     # participant 02
     # imagined
-    # filepath = '../raw_eeg_recordings_labelled/participant_02/imagined/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_02/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_02/imagined/'
     # inner
-    # filepath = '../raw_eeg_recordings_labelled/participant_02/inner/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_02/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_02/inner/'
 
     # participant 03
     # imagined
-    # filepath = '../raw_eeg_recordings_labelled/participant_03/imagined/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_03/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_03/imagined/'
     # inner
-    # filepath = '../raw_eeg_recordings_labelled/participant_03/inner/full_labelled.csv.zip'
+    #filepath = '../raw_eeg_recordings_labelled/participant_03/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_03/inner/'
 
     # participant 04
@@ -187,14 +187,13 @@ if __name__ == '__main__':
 
     raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
     raw_plot = raw_mne.plot(block=True, scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False, show_options=False)
-    # raw_plot.savefig('plot')
+    #raw_plot.savefig('plot')
 
     # interpolate_channel(raw_mne=raw_mne, channel='T8')  # participant 03 imagined
     # interpolate_channel(raw_mne=raw_mne, channel='F8')  # participant 01 imagined
 
     filter_raw(raw_mne)  # apply high-pass filter
-    preprocess_continuous(raw_mne)
-    # compare ICA data to no-ICA data
+    preprocess_continuous(raw_mne)  # ICA
 
     raw_mne.plot(block=True, scalings=dict(eeg=150))  # plot raw data after ICA
 

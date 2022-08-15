@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../code_classification/.idea/code_classification.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/.idea/code_classification.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../code_classification/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_visualisation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mne_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/preprocessing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
