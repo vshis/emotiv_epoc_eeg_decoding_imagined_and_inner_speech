@@ -93,7 +93,7 @@ def knn_for_participant(participant_n: int):
     df.to_csv(Path(f'knn_results/participant_0{participant_n}.csv'), index=False)
 
 
-def knn_for_participant_00():
+def knn_for_raw_only():
     speech_modes = ['imagined', 'inner']
     accuracies = {}
     for speech_mode in speech_modes:
@@ -118,4 +118,4 @@ if __name__ == '__main__':
     #participant_ns = [i for i in range(1, 5)]
     #for participant_n in participant_ns:
     #    knn_for_participant(participant_n)
-    knn_for_participant_00()
+    knn_for_raw_only()
