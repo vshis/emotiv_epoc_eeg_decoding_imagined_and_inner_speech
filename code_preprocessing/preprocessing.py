@@ -1,9 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import mne
 from itertools import chain
 from pathlib import Path
-
 
 SAMPLING_FREQUENCY = 256  # hz
 EPOCH_DURATION = 3.0  # seconds
@@ -147,7 +147,7 @@ def drop_stages(raw_mne: mne.io.RawArray, filepath: str):
 if __name__ == '__main__':
     # participant 00
     # imagined
-    #filepath = '../raw_eeg_recordings_labelled/participant_00/imagined/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_00/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_00/imagined/'
     # inner
     # filepath = '../raw_eeg_recordings_labelled/participant_00/inner/full_labelled.csv.zip'
@@ -155,39 +155,49 @@ if __name__ == '__main__':
 
     # participant 01
     # imagined
-    #filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_01/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_01/imagined/'
     # inner
-    #filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_01/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_01/inner/'
 
     # participant 02
     # imagined
-    #filepath = '../raw_eeg_recordings_labelled/participant_02/imagined/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_02/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_02/imagined/'
     # inner
-    #filepath = '../raw_eeg_recordings_labelled/participant_02/inner/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_02/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_02/inner/'
 
     # participant 03
     # imagined
-    #filepath = '../raw_eeg_recordings_labelled/participant_03/imagined/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_03/imagined/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_03/imagined/'
     # inner
-    #filepath = '../raw_eeg_recordings_labelled/participant_03/inner/full_labelled.csv.zip'
+    # filepath = '../raw_eeg_recordings_labelled/participant_03/inner/full_labelled.csv.zip'
     # save_path = '../data_preprocessed/participant_03/inner/'
 
     # participant 04
     # imagined
-    #filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
-    #save_path = '../data_preprocessed/participant_04/imagined/'
+    # filepath = '../raw_eeg_recordings_labelled/participant_04/imagined/full_labelled.csv.zip'
+    # save_path = '../data_preprocessed/participant_04/imagined/'
     # inner
     filepath = '../raw_eeg_recordings_labelled/participant_04/inner/full_labelled.csv.zip'
     save_path = '../data_preprocessed/participant_04/inner/'
 
     raw_mne = load_raw_data(filepath=filepath, verbose=False, data_type='my')  # loads data from csv to mne.io.RawArray
-    raw_plot = raw_mne.plot(block=True, scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False, show_options=False)
-    #raw_plot.savefig('plot')
+    plt.rcParams.update({
+        'ytick.labelsize': 'small',
+        'xtick.labelsize': 'small',
+        'axes.labelsize': 'small',
+        'axes.titlesize': 'medium',
+        'grid.color': '0.75',
+        'grid.linestyle': ':',
+    })
+    raw_plot = raw_mne.plot(scalings=dict(eeg=150), show_scrollbars=False, show_scalebars=False,
+                            show_options=False)
+    # raw_plot.savefig('plot')
+    exit(0)
 
     # interpolate_channel(raw_mne=raw_mne, channel='T8')  # participant 03 imagined
     # interpolate_channel(raw_mne=raw_mne, channel='F8')  # participant 01 imagined
