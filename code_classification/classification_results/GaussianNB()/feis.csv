@@ -1,0 +1,2 @@
+Method,raw_train_mean,raw_train_std,raw_test_mean,raw_test_std,preprocessed_train_mean,preprocessed_train_std,preprocessed_test_mean,preprocessed_test_std,features_train_mean,features_train_std,features_test_mean,features_test_std
+GaussianNB(),0.12791748046875,0.0002750783461895183,0.1277587890625,0.00171823667316661,0.11559610968276808,0.0004038279246631484,0.11516652655819312,0.0016237442819167676,0.11163522012578615,0.004972134685799337,0.08427672955974842,0.012950478164763524

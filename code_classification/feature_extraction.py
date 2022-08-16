@@ -131,6 +131,7 @@ def get_features(filepath: str, savedir: str = None, verbose=True):
     features = np.concatenate(features)
 
     if savedir is not None:
+
         np.save(file=Path(f"{savedir}features.npy"), arr=features)
         np.save(file=Path(f"{savedir}labels.npy"), arr=labels)
 
@@ -205,7 +206,7 @@ def support_vm(data, labels):
 
 
 def extract_participants_features():
-    for participant_n in range(1, 5):
+    for participant_n in range(4, 5):
         print(f"Participant {participant_n}...")
         for speech_type in ['imagined', 'inner']:
             print(f"Speech type {speech_type}")
@@ -215,13 +216,15 @@ def extract_participants_features():
 
 
 def extract_features_binary():
-    filepath = f'binary_data/p01_imagined_preprocessed_binary.csv'
-    save_dir = f'features/even_windows/binary/'
+    filepath = 'binary_data/p01_imagined_preprocessed_binary.csv'
+    save_dir = 'features/even_windows/binary/'
     get_features(filepath=filepath, savedir=save_dir, verbose=False)
 
 
 def extract_features_feis():
-    filepath = f'../../feis_preprocessed/preprocessed.csv'
+    filepath = 'feis_data/preprocessed.csv'
+    save_dir = 'features/even_windows/feis/'
+    get_features(filepath=filepath, savedir=save_dir, verbose=False)
 
 
 if __name__ == '__main__':
@@ -230,6 +233,7 @@ if __name__ == '__main__':
     #labels = np.load('labels.npy')
     #using_windows(preloaded_features=features, preloaded_labels=labels)
 
-    #extract_participants_features()
-    extract_features_binary()
+    extract_participants_features()
+    #extract_features_binary()
+    #extract_features_feis()
 
