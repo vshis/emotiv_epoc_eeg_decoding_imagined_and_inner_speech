@@ -1,0 +1,2 @@
+Method,raw_train_mean,raw_train_std,raw_test_mean,raw_test_std,preprocessed_train_mean,preprocessed_train_std,preprocessed_test_mean,preprocessed_test_std,features_train_mean,features_train_std,features_test_mean,features_test_std
+LinearDiscriminantAnalysis(),0.6198486328125001,0.0016708924445575032,0.6194986979166667,0.0017930259575417182,0.5756989596879063,0.002644404133178782,0.5749024707412224,0.006833546971797794,0.92125,0.011592023119369634,0.575,0.052440442408507565

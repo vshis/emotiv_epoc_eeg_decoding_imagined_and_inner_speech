@@ -1,0 +1,2 @@
+Method,raw_train_mean,raw_train_std,raw_test_mean,raw_test_std,preprocessed_train_mean,preprocessed_train_std,preprocessed_test_mean,preprocessed_test_std,features_train_mean,features_train_std,features_test_mean,features_test_std
+AdaBoostClassifier(learning_rate=2.0),0.08312258924337441,0.008878054343625852,0.08191888120533725,0.009353710442886945,0.08992826948286274,0.007551040897659599,0.08861983807854516,0.006917509331455401,0.1238993710691824,0.011766218197402329,0.08176100628930817,0.012452194888819702
