@@ -1,0 +1,2 @@
+Method,raw_imagined_train_mean,raw_imagined_train_std,raw_imagined_test_mean,raw_imagined_test_std,raw_inner_train_mean,raw_inner_train_std,raw_inner_test_mean,raw_inner_test_std
+AdaBoostClassifier(n_estimators=100),0.07789713541666667,0.0008611125911850282,0.0643798828125,0.0005980199567341743,0.076953125,0.00150884041806814,0.06304524739583334,0.0014665156113257906
