@@ -1,0 +1,2 @@
+Method,raw_train_mean,raw_train_std,raw_test_mean,raw_test_std,preprocessed_train_mean,preprocessed_train_std,preprocessed_test_mean,preprocessed_test_std,features_train_mean,features_train_std,features_test_mean,features_test_std
+"KNeighborsClassifier(n_jobs=-2, n_neighbors=53)",0.8175317387439899,0.00014040926727961733,0.7977343735598367,0.001296639117002851,0.40333564088590385,0.0014819162503068477,0.3347964198567353,0.0010170756206272032,0.12012578616352203,0.00495220621007032,0.05911949685534592,0.0077539798779483965

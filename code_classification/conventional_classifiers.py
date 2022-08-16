@@ -300,6 +300,7 @@ if __name__ == '__main__':
         #KNeighborsClassifier(n_neighbors=13, n_jobs=-2),  # kNN
         #KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
         #KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
+        # k=53 done
         #KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
         #KNeighborsClassifier(n_neighbors=139, n_jobs=-2),  # kNN
               ]

@@ -2,20 +2,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
+print(f"Using {torch.cuda.get_device_name(device)}")
 
 
 class Classifier(nn.Module):
     def __init__(self, input_size, num_classes):
         super(Classifier, self).__init__()
 
-        self.conv = nn.Conv1d(in_channels=input_size, out_channels=32, kernel_size=5, stride=1)
+        self.conv = nn.Conv1d(in_channels=14, out_channels=32, kernel_size=5, stride=1)
 
         self.conv_pad = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=5, stride=1, padding=2)
         self.drop_50 = nn.Dropout(p=0.5)
@@ -77,10 +76,13 @@ if __name__ == '__main__':
     y = encoder.fit_transform(labels)
 
     x_train, x_test, y_train, y_test = train_test_split(data, y, test_size=0.3, random_state=42)
-    print(x_train.shape)
-    print(y_train[0:5])
 
-    model = Classifier(input_size=1, num_classes=14)
+    model = Classifier(input_size=1, num_classes=16).to(device)
 
+    x_train_tensor = torch.tensor(x_train.values).float().to(device)
+    y_train_tensor = torch.from_numpy(y_train).to(device)
+    print(x_train_tensor.shape)
 
-    model(torch.tensor(x_train.values)[0:5, :])
+    print(x_train_tensor[0].shape)
+    model(x_train_tensor[0])
+
