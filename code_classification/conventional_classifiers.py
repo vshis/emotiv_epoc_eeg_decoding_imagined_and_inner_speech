@@ -14,7 +14,7 @@ import os
 def run_model(data, labels, model):
     """Returns accuracies: mean_train, std_train, mean_test, std_test"""
     print(f"--- Running {model}")
-    folds = 5
+    folds = 3
     kfold = KFold(folds, shuffle=True)
 
     train_accuracies = []
@@ -281,27 +281,28 @@ def run_model_for_feis(model):
 
 if __name__ == '__main__':
     models = [
-        LinearDiscriminantAnalysis(),  # LDA
-        SVC(kernel='rbf', cache_size=2000),  # SVM
-        SVC(kernel='poly', cache_size=2000),  # SVM
-        SVC(kernel='sigmoid', cache_size=2000),  # SVM
+        #LinearDiscriminantAnalysis(),  # LDA
+        #SVC(kernel='rbf', cache_size=2000),  # SVM
+        #SVC(kernel='poly', cache_size=2000),  # SVM
+        #SVC(kernel='sigmoid', cache_size=2000),  # SVM
         #GaussianNB(),  # naive bayes
-        AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
-        AdaBoostClassifier(n_estimators=100, learning_rate=1.0),  # RF
-        AdaBoostClassifier(n_estimators=200, learning_rate=1.0),  # RF
-        AdaBoostClassifier(n_estimators=400, learning_rate=1.0),  # RF
-        AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
-        AdaBoostClassifier(n_estimators=50, learning_rate=0.5),  # RF
-        AdaBoostClassifier(n_estimators=50, learning_rate=0.1),  # RF
-        AdaBoostClassifier(n_estimators=50, learning_rate=1.5),  # RF
-        AdaBoostClassifier(n_estimators=50, learning_rate=2.0),  # RF
-        KNeighborsClassifier(n_neighbors=1, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=5, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=13, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=139, n_jobs=-2),  # kNN
+        #AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
+        #AdaBoostClassifier(n_estimators=100, learning_rate=1.0),  # RF
+        #AdaBoostClassifier(n_estimators=200, learning_rate=1.0),  # RF
+        #AdaBoostClassifier(n_estimators=400, learning_rate=1.0),  # RF
+        #AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
+        #AdaBoostClassifier(n_estimators=50, learning_rate=0.5),  # RF
+        #AdaBoostClassifier(n_estimators=50, learning_rate=0.1),  # RF
+        #AdaBoostClassifier(n_estimators=50, learning_rate=1.5),  # RF
+        #AdaBoostClassifier(n_estimators=50, learning_rate=2.0),  # RF
+        #KNeighborsClassifier(n_neighbors=1, n_jobs=-2),  # kNN
+        #KNeighborsClassifier(n_neighbors=5, n_jobs=-2),  # kNN
+        #KNeighborsClassifier(n_neighbors=13, n_jobs=-2),  # kNN
+        #KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
+        #KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
+        # k=53 done
+        #KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
+        #KNeighborsClassifier(n_neighbors=139, n_jobs=-2),  # kNN
               ]
     participants = [i for i in range(1, 5)]
 
