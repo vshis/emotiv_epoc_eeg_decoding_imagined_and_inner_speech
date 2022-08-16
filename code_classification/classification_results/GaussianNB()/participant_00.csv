@@ -1,0 +1,2 @@
+Method,raw_imagined_train_mean,raw_imagined_train_std,raw_imagined_test_mean,raw_imagined_test_std,raw_inner_train_mean,raw_inner_train_std,raw_inner_test_mean,raw_inner_test_std
+GaussianNB(),0.07011311848958332,0.0006315688797673958,0.062548828125,0.001362334827984478,0.06993001302083332,0.0006007339584594288,0.06200358072916666,0.0013916729468167759
