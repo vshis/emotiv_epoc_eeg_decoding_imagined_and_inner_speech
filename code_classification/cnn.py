@@ -2,8 +2,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
+import numpy as np
+import time
+from sklearn.metrics import cohen_kappa_score, f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
+from torch.utils.data import DataLoader, Dataset
+from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ReduceLROnPlateau
+from tqdm import tqdm
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -14,14 +21,14 @@ class Classifier(nn.Module):
     def __init__(self, input_size, num_classes):
         super(Classifier, self).__init__()
 
-        self.conv = nn.Conv1d(in_channels=14, out_channels=32, kernel_size=5, stride=1)
+        self.conv = nn.Conv1d(in_channels=input_size, out_channels=32, kernel_size=4, stride=1)
 
-        self.conv_pad = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=5, stride=1, padding=2)
+        self.conv_pad = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=4, stride=1, padding=1)
         self.drop_50 = nn.Dropout(p=0.5)
 
         self.maxpool = nn.MaxPool1d(kernel_size=5, stride=2)
 
-        self.dense1 = nn.Linear(32 * 8, 32)
+        self.dense1 = nn.Linear(96, 32)
         self.dense2 = nn.Linear(32, 32)
 
         self.dense_final = nn.Linear(32, num_classes)
@@ -29,7 +36,6 @@ class Classifier(nn.Module):
 
     def forward(self, x):
         residual = self.conv(x)
-        print()
 
         # block1
         x = F.relu(self.conv_pad(residual))
@@ -60,29 +66,131 @@ class Classifier(nn.Module):
         x = self.maxpool(x)  # [512 32 8]
 
         # MLP
-        x = x.view(-1, 32 * 8)  # Reshape (current_dim, 32*2)
+        x = x.view(-1, 96)  # Reshape (current_dim, 32*2)
         x = F.relu(self.dense1(x))
         # x = self.drop_60(x)
         x = self.dense2(x)
         x = self.softmax(self.dense_final(x))
+        #x = self.dense_final(x)
         return x
 
 
-if __name__ == '__main__':
+class Conv1DClassifier(nn.Module):
+    def __init__(self):
+        super(Conv1DClassifier, self).__init__()
+        
+
+
+class SpeechDataset(Dataset):
+    def __init__(self, x_train, y_train, mode='train', data_type='numpy'):
+        self.x_train = x_train
+        self.y_train = y_train
+        self.mode = mode
+        self.data_type = data_type
+
+    def __len__(self):
+        return len(self.x_train)
+
+    def _augmentations(self, x_data, y_data):
+        # flip
+        if np.random.rand() < 0.5:
+            x_data = x_data[::-1]
+            y_data = y_data[::-1]
+        return x_data, y_data
+
+    def __getitem__(self, idx):
+        x = self.x_train[idx]
+        y = self.y_train[idx]
+        # look up dataset with augmentation
+        #if self.mode == 'train':
+        #    x, y = self._augmentations(x, y)
+        if self.data_type == 'numpy':
+            out_x = torch.from_numpy(x).float().to(device)
+            out_y = torch.from_numpy(y).float().to(device)  # float
+        else:
+            out_x = torch.from_numpy(x).float().to(device)
+            out_y = torch.from_numpy(y).float().to(device)  # float
+        return out_x.unsqueeze(0), out_y
+
+
+def using_features():
+    data = np.load('features/even_windows/participant_01/imagined/features.npy')
+    labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
+    train_loader, val_loader, test_loader = prep_loaders(data, labels)
+    train_model(train_loader)
+
+
+def using_raw():
     df = pd.read_csv('../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv')
     labels = df['Label']
     data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)
+    data = data.values
+    train_loader, val_loader, test_loader = prep_loaders(data, labels)
+    train_model(train_loader)
+
+
+def prep_loaders(data, labels):
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
 
-    x_train, x_test, y_train, y_test = train_test_split(data, y, test_size=0.3, random_state=42)
+    # split into 80/10/10 train/val/test
+    input_train, x_rem, target_train, y_rem = train_test_split(data, y, test_size=0.2, random_state=42)
+    input_val, input_test, target_val, target_test = train_test_split(x_rem, y_rem, test_size=0.5, random_state=42)
 
+    print(f"input_train: {input_train.shape}, input_val: {input_val.shape}, input_test: {input_test.shape}\n"
+          f"target_train: {target_train.shape}, target_val: {target_val.shape}, target_test: {target_test.shape}")
+
+    batch_size = 8
+
+    train = SpeechDataset(input_train, target_train, mode='train')
+    val = SpeechDataset(input_val, target_val, mode='val')
+    test = SpeechDataset(input_test, target_test, mode='test')
+
+    train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, test_loader
+
+
+def train_model(train_loader):
+    # Hyperparameters
+    n_epochs = 10
+    lr = 0.001
+
+    loss_fn = nn.BCELoss()
+
+    # Build model, initial weight and optimizer
     model = Classifier(input_size=1, num_classes=16).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)  # Using Adam optimizer
+    loss_his, train_loss = [], []
+    model.train()
 
-    x_train_tensor = torch.tensor(x_train.values).float().to(device)
-    y_train_tensor = torch.from_numpy(y_train).to(device)
-    print(x_train_tensor.shape)
+    for epoch in range(n_epochs):
+        p_bar = tqdm(train_loader)
+        for i, (x, y) in enumerate(p_bar):
+            pred = model(x)
+            print(pred.size())
+            print(y.size())
+            loss = loss_fn(pred, y)
+            print(loss)
+            exit()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            train_loss.append(loss.item())
+            p_bar.set_description(f"[Loss: {train_loss[-1]}")
+            if i % 50 == 0:
+                loss_his.append(np.mean(train_loss))
+                train_loss.clear()
+        print(f"Epoch {epoch+1}/{n_epochs} [Loss: {loss_his[-1]}")
 
-    print(x_train_tensor[0].shape)
-    model(x_train_tensor[0])
+    torch.save(model.state_dict(), 'model.pt')
+    #model.load_state_dict(torch.load('model.pt'))
+
+
+if __name__ == '__main__':
+    #using_features()
+    using_raw()
+
 
