@@ -301,13 +301,13 @@ if __name__ == '__main__':
         #KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
         #KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
         #KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
-        KNeighborsClassifier(n_neighbors=139, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=131, n_jobs=-2),  # kNN
               ]
     participants = [i for i in range(1, 5)]
 
     for model in models:
-        for participant_n in participants:
-            run_model_for_participant(participant_n, model)
+        #for participant_n in participants:
+        #    run_model_for_participant(participant_n, model)
         run_model_for_binary(model)
         run_model_for_p00(model)
         run_model_for_feis(model)
