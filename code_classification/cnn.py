@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ReduceLROnPlateau
 from tqdm import tqdm
-
+from sklearn import metrics
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
@@ -71,22 +71,44 @@ class Classifier(nn.Module):
         # x = self.drop_60(x)
         x = self.dense2(x)
         x = self.softmax(self.dense_final(x))
-        #x = self.dense_final(x)
+        # x = self.dense_final(x)
         return x
 
 
 class Conv1DClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size, num_classes):
         super(Conv1DClassifier, self).__init__()
-        
+        self.conv1 = nn.Conv1d(input_size, 32, kernel_size=3, padding=2)
+        self.dense1 = nn.Linear(512, 64)
+        self.dense2 = nn.Linear(64, num_classes)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = x.view(8, -1)  # Reshape (current_dim, 32*16)
+        x = self.dense1(x)
+        x = torch.sigmoid(self.dense2(x))
+        return x
+
+
+class ShallowClassifier(nn.Module):
+    def __init__(self, input_num, hidden_num, output_num):
+        super(ShallowClassifier, self).__init__()
+        self.hidden = nn.Linear(input_num, hidden_num)  # hidden layer
+        self.output = nn.Linear(hidden_num, output_num)  # output layer
+        self.sigmoid = nn.Sigmoid()  # sigmoid activation function
+        self.relu = nn.ReLU()  # relu activation function
+
+    def forward(self, x):
+        x = self.relu(self.hidden(x))
+        out = self.output(x)
+        return self.sigmoid(out)
 
 
 class SpeechDataset(Dataset):
-    def __init__(self, x_train, y_train, mode='train', data_type='numpy'):
+    def __init__(self, x_train, y_train, mode='train'):
         self.x_train = x_train
         self.y_train = y_train
         self.mode = mode
-        self.data_type = data_type
 
     def __len__(self):
         return len(self.x_train)
@@ -102,22 +124,19 @@ class SpeechDataset(Dataset):
         x = self.x_train[idx]
         y = self.y_train[idx]
         # look up dataset with augmentation
-        #if self.mode == 'train':
+        # if self.mode == 'train':
         #    x, y = self._augmentations(x, y)
-        if self.data_type == 'numpy':
-            out_x = torch.from_numpy(x).float().to(device)
-            out_y = torch.from_numpy(y).float().to(device)  # float
-        else:
-            out_x = torch.from_numpy(x).float().to(device)
-            out_y = torch.from_numpy(y).float().to(device)  # float
-        return out_x.unsqueeze(0), out_y
+        out_x = torch.from_numpy(x).float().to(device)
+        out_y = torch.from_numpy(y).float().to(device)  # float
+        return out_x, out_y
 
 
 def using_features():
     data = np.load('features/even_windows/participant_01/imagined/features.npy')
     labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
     train_loader, val_loader, test_loader = prep_loaders(data, labels)
-    train_model(train_loader)
+    #train_model(train_loader)
+    test_model(test_loader)
 
 
 def using_raw():
@@ -158,10 +177,11 @@ def train_model(train_loader):
     n_epochs = 10
     lr = 0.001
 
-    loss_fn = nn.BCELoss()
+    loss_fn = nn.MSELoss()
 
     # Build model, initial weight and optimizer
-    model = Classifier(input_size=1, num_classes=16).to(device)
+    #model = Conv1DClassifier(input_size=1, num_classes=16).to(device)
+    model = ShallowClassifier(input_num=98, hidden_num=64, output_num=16).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)  # Using Adam optimizer
     loss_his, train_loss = [], []
     model.train()
@@ -170,11 +190,7 @@ def train_model(train_loader):
         p_bar = tqdm(train_loader)
         for i, (x, y) in enumerate(p_bar):
             pred = model(x)
-            print(pred.size())
-            print(y.size())
             loss = loss_fn(pred, y)
-            print(loss)
-            exit()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -183,14 +199,29 @@ def train_model(train_loader):
             if i % 50 == 0:
                 loss_his.append(np.mean(train_loss))
                 train_loss.clear()
-        print(f"Epoch {epoch+1}/{n_epochs} [Loss: {loss_his[-1]}")
+        print(f"Epoch {epoch + 1}/{n_epochs} [Loss: {loss_his[-1]}")
 
     torch.save(model.state_dict(), 'model.pt')
-    #model.load_state_dict(torch.load('model.pt'))
+
+
+def test_model(testloader):
+    model = ShallowClassifier(input_num=98, hidden_num=64, output_num=16).to(device)
+    model.load_state_dict(torch.load('model.pt'))
+    y_pred = []
+    y_true = []
+    with torch.no_grad():
+        for x, y in tqdm(testloader):
+            x = x.to(device)
+            pred = model(x).squeeze(dim=-1).detach().cpu().numpy()
+            y_pred.append(pred)
+            y_true.append(y.detach().cpu().numpy())
+    y_pred = np.concatenate(y_pred, axis=0)
+    y_true = np.concatenate(y_true, axis=0)
+    y_true[y_true < .1] = 0
+    print('auc roc: ', metrics.roc_auc_score(y_true, y_pred))
+    print(f"Accuracy: {accuracy_score(y_true, y_pred)}")
 
 
 if __name__ == '__main__':
-    #using_features()
-    using_raw()
-
-
+    using_features()
+    #using_raw()
