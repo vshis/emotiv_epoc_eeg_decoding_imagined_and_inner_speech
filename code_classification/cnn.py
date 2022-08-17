@@ -18,7 +18,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
 NUMBER_OF_EPOCHS = 10
-BATCH_SIZE = 64
+BATCH_SIZE = 8
 LEARNING_RATE = 0.001
 
 
@@ -228,8 +228,8 @@ def train_model(train_loader, val_loader):
     criterion = nn.CrossEntropyLoss()
 
     # Build model, initial weight and optimizer
-    model = Conv1DClassifier(channels_in=1, num_classes=16).to(device)
-    #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
+    #model = Conv1DClassifier(channels_in=1, num_classes=16).to(device)
+    model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
     #model = ShallowClassifier(input_num=98, hidden_num=64, output_num=16).to(device)
     #print(summary(model, input_size=(8, 1, 768, 14)))
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
@@ -276,8 +276,8 @@ def train_model(train_loader, val_loader):
 
 
 def test_model(test_loader):
-    #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
-    model = Conv1DClassifier(channels_in=1, num_classes=16).to(device)
+    #model = Conv1DClassifier(channels_in=1, num_classes=16).to(device)
+    model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -302,7 +302,7 @@ def run_algorithm():
     labels = df['Label']
     data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)
     data = data.values
-    train_loader, val_loader, test_loader = prep_loaders(data, labels, two_d=False)
+    train_loader, val_loader, test_loader = prep_loaders(data, labels, two_d=True)
 
     train_model(train_loader, val_loader)
     test_model(test_loader)
