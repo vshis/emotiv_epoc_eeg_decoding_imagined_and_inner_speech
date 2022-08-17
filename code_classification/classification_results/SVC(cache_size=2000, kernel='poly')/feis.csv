@@ -1,0 +1,2 @@
+Method,features_train_mean,features_train_std,features_test_mean,features_test_std
+"SVC(cache_size=2000, kernel='poly')",0.0779874213836478,0.0023532436394804656,0.03773584905660377,0.00397770774863947

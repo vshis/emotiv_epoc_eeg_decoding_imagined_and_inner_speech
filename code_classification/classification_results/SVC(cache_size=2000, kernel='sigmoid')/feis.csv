@@ -1,0 +1,2 @@
+Method,features_train_mean,features_train_std,features_test_mean,features_test_std
+"SVC(cache_size=2000, kernel='sigmoid')",0.0720125786163522,0.0053919585532963025,0.04025157232704403,0.012324476693248694

@@ -1,0 +1,2 @@
+Method,features_imagined_train_mean,features_imagined_train_std,features_imagined_test_mean,features_imagined_test_std,features_inner_train_mean,features_inner_train_std,features_inner_test_mean,features_inner_test_std
+"SVC(cache_size=2000, kernel='poly')",0.07962382445141067,0.006082635709069675,0.041379310344827586,0.005393307377456192,0.07413793103448277,0.001453545218729732,0.041379310344827586,0.00234586670017175
