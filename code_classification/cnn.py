@@ -12,14 +12,58 @@ from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ReduceLROnPlateau
 from tqdm import tqdm
 from sklearn import metrics
+from torchinfo import summary
+import os
+from pathlib import Path
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
+NUMBER_OF_EPOCHS = 10
+BATCH_SIZE = 64
+LEARNING_RATE = 0.001
 
-class Classifier(nn.Module):
+
+class Conv2DClassifier(nn.Module):
+    def __init__(self, channels_in, num_classes):
+        super(Conv2DClassifier, self).__init__()
+
+        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=12, kernel_size=(154, 3), stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=12, out_channels=12, kernel_size=(11, 3), stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=12, out_channels=24, kernel_size=(11, 3), stride=1, padding=1)
+        self.conv4 = nn.Conv2d(in_channels=24, out_channels=24, kernel_size=(11, 3), stride=1, padding=1)
+
+        self.fc1 = nn.Linear(48384, num_classes)
+
+        self.bn1 = nn.BatchNorm2d(12)
+        self.bn2 = nn.BatchNorm2d(24)
+
+        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        #print(x.shape)
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn1(self.conv2(x)))
+        #print(x.shape)
+        x = self.maxpool(x)
+        x = F.relu(self.bn2(self.conv3(x)))
+        x = F.relu(self.bn2(self.conv4(x)))
+        #print(x.shape)
+        #print(x.shape)
+        #print(x.shape)
+        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
+        x = self.fc1(x)
+        #print(x.shape)
+        #print(x.shape)
+        #print(x.shape)
+        return x
+
+
+class ResClassifier(nn.Module):
     def __init__(self, input_size, num_classes):
-        super(Classifier, self).__init__()
+        super(ResClassifier, self).__init__()
 
         self.conv = nn.Conv1d(in_channels=input_size, out_channels=32, kernel_size=4, stride=1)
 
@@ -75,43 +119,68 @@ class Classifier(nn.Module):
         return x
 
 
-class Conv1DClassifier(nn.Module):
-    def __init__(self, input_size, num_classes):
-        super(Conv1DClassifier, self).__init__()
-        self.conv1 = nn.Conv1d(input_size, 32, kernel_size=3, padding=2)
-        self.dense1 = nn.Linear(512, 64)
-        self.dense2 = nn.Linear(64, num_classes)
+class Conv1DRawClassifier(nn.Module):
+    def __init__(self, channels_in, num_classes):
+        super(Conv1DRawClassifier, self).__init__()
+        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=12, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv1d(in_channels=12, out_channels=12, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv1d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv1d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
+
+        self.fc1 = nn.Linear(168, num_classes)
+
+        self.bn1 = nn.BatchNorm1d(12)
+        self.bn2 = nn.BatchNorm1d(24)
+
+        self.maxpool = nn.MaxPool1d(kernel_size=2, stride=2)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = x.view(8, -1)  # Reshape (current_dim, 32*16)
-        x = self.dense1(x)
-        x = torch.sigmoid(self.dense2(x))
+        #print(x.shape)
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn1(self.conv2(x)))
+        x = self.maxpool(x)
+        x = F.relu(self.bn2(self.conv3(x)))
+        x = F.relu(self.bn2(self.conv4(x)))
+        x = x.view(-1, x.shape[-1] * x.shape[-2])
+        x = self.fc1(x)
         return x
 
 
-class ShallowClassifier(nn.Module):
-    def __init__(self, input_num, hidden_num, output_num):
-        super(ShallowClassifier, self).__init__()
-        self.hidden = nn.Linear(input_num, hidden_num)  # hidden layer
-        self.output = nn.Linear(hidden_num, output_num)  # output layer
-        self.sigmoid = nn.Sigmoid()  # sigmoid activation function
-        self.relu = nn.ReLU()  # relu activation function
+class Conv1DFeaturesClassifier(nn.Module):
+    def __init__(self, channels_in, num_classes):
+        super(Conv1DFeaturesClassifier, self).__init__()
+        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=12, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv1d(in_channels=12, out_channels=12, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv1d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv1d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
+
+        self.fc1 = nn.Linear(1176, num_classes)
+
+        self.bn1 = nn.BatchNorm1d(12)
+        self.bn2 = nn.BatchNorm1d(24)
+
+        self.maxpool = nn.MaxPool1d(kernel_size=2, stride=2)
 
     def forward(self, x):
-        x = self.relu(self.hidden(x))
-        out = self.output(x)
-        return self.sigmoid(out)
+        #print(x.shape)
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn1(self.conv2(x)))
+        x = self.maxpool(x)
+        x = F.relu(self.bn2(self.conv3(x)))
+        x = F.relu(self.bn2(self.conv4(x)))
+        x = x.view(-1, x.shape[-1] * x.shape[-2])
+        x = self.fc1(x)
+        return x
 
 
 class SpeechDataset(Dataset):
-    def __init__(self, x_train, y_train, mode='train'):
-        self.x_train = x_train
-        self.y_train = y_train
+    def __init__(self, x, y, mode='train'):
+        self.x = x
+        self.y = y
         self.mode = mode
 
     def __len__(self):
-        return len(self.x_train)
+        return len(self.x)
 
     def _augmentations(self, x_data, y_data):
         # flip
@@ -121,45 +190,39 @@ class SpeechDataset(Dataset):
         return x_data, y_data
 
     def __getitem__(self, idx):
-        x = self.x_train[idx]
-        y = self.y_train[idx]
+        x = self.x[idx]
+        y = self.y[idx]
         # look up dataset with augmentation
         # if self.mode == 'train':
         #    x, y = self._augmentations(x, y)
-        out_x = torch.from_numpy(x).float().to(device)
-        out_y = torch.from_numpy(y).float().to(device)  # float
-        return out_x, out_y
+        out_x = x  # torch.from_numpy(x).float().to(device)
+        out_y = y  # torch.from_numpy(y).float().to(device)  # float
+        return out_x.unsqueeze(0), torch.max(out_y, 0)[1]
 
 
-def using_features():
-    data = np.load('features/even_windows/participant_01/imagined/features.npy')
-    labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
-    train_loader, val_loader, test_loader = prep_loaders(data, labels)
-    #train_model(train_loader)
-    test_model(test_loader)
-
-
-def using_raw():
-    df = pd.read_csv('../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv')
-    labels = df['Label']
-    data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)
-    data = data.values
-    train_loader, val_loader, test_loader = prep_loaders(data, labels)
-    train_model(train_loader)
-
-
-def prep_loaders(data, labels):
+def prep_loaders(data, labels, two_d=False):
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
 
+    y = torch.from_numpy(y).float().to(device)
+    data = torch.from_numpy(data).float().to(device)
+
+    data_mean = torch.mean(data, dim=0)
+    data_var = torch.var(data, dim=0)
+    data_norm = (data - data_mean) / torch.sqrt(data_var)
+
+    if two_d:
+        # for 2D clf
+        y = y.reshape(320, -1, 16)[:, 0, :]
+        data_norm = data_norm.reshape(320, -1, 14)
+
     # split into 80/10/10 train/val/test
-    input_train, x_rem, target_train, y_rem = train_test_split(data, y, test_size=0.2, random_state=42)
+    input_train, x_rem, target_train, y_rem = train_test_split(data_norm, y, test_size=0.2, random_state=42)
     input_val, input_test, target_val, target_test = train_test_split(x_rem, y_rem, test_size=0.5, random_state=42)
 
     print(f"input_train: {input_train.shape}, input_val: {input_val.shape}, input_test: {input_test.shape}\n"
           f"target_train: {target_train.shape}, target_val: {target_val.shape}, target_test: {target_test.shape}")
-
-    batch_size = 8
+    batch_size = BATCH_SIZE
 
     train = SpeechDataset(input_train, target_train, mode='train')
     val = SpeechDataset(input_val, target_val, mode='val')
@@ -172,56 +235,127 @@ def prep_loaders(data, labels):
     return train_loader, val_loader, test_loader
 
 
-def train_model(train_loader):
+def train_model(train_loader, val_loader):
     # Hyperparameters
-    n_epochs = 10
-    lr = 0.001
+    n_epochs = NUMBER_OF_EPOCHS
+    lr = LEARNING_RATE
 
-    loss_fn = nn.MSELoss()
+    criterion = nn.CrossEntropyLoss()
 
     # Build model, initial weight and optimizer
-    #model = Conv1DClassifier(input_size=1, num_classes=16).to(device)
-    model = ShallowClassifier(input_num=98, hidden_num=64, output_num=16).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)  # Using Adam optimizer
-    loss_his, train_loss = [], []
-    model.train()
+    model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
+    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
+
+    #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    #optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+
+    best_accuracy = 0.0
 
     for epoch in range(n_epochs):
+        running_train_loss = 0.0
+        running_accuracy = 0.0
+        running_val_loss = 0.0
+        total = 0
         p_bar = tqdm(train_loader)
-        for i, (x, y) in enumerate(p_bar):
-            pred = model(x)
-            loss = loss_fn(pred, y)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            train_loss.append(loss.item())
-            p_bar.set_description(f"[Loss: {train_loss[-1]}")
-            if i % 50 == 0:
-                loss_his.append(np.mean(train_loss))
-                train_loss.clear()
-        print(f"Epoch {epoch + 1}/{n_epochs} [Loss: {loss_his[-1]}")
+        for x, y in p_bar:
+            optimizer.zero_grad()  # clear gradients
+            predicted_outputs = model(x)  # forward pass
+            train_loss = criterion(predicted_outputs, y)  # find loss
+            train_loss.backward()  # calculate gradients
+            optimizer.step()  # update weights
+            running_train_loss += train_loss.item()  # calculate loss
 
-    torch.save(model.state_dict(), 'model.pt')
+        train_loss_value = running_train_loss/len(train_loader)
+
+        with torch.no_grad():
+            model.eval()
+            for x, y in val_loader:
+                predicted_outputs = model(x)
+                val_loss = criterion(predicted_outputs, y)
+
+                _, predicted = torch.max(predicted_outputs.data, 1)
+                running_val_loss += val_loss.item()
+                total += y.size(0)
+                running_accuracy += (predicted == y).sum().item()
+
+        val_loss_value = running_val_loss/len(val_loader)
+
+        accuracy = (100 * running_accuracy / total)
+
+        if accuracy > best_accuracy:
+            torch.save(model.state_dict(), 'model.pt')
+            best_accuracy = accuracy
+
+        print(f"Epoch {epoch+1} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
-def test_model(testloader):
-    model = ShallowClassifier(input_num=98, hidden_num=64, output_num=16).to(device)
+def test_model(test_loader):
+    """Returns test accuracy"""
+    model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)  # RAW
+    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
+    #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
-    y_pred = []
-    y_true = []
+    running_accuracy = 0
+    total = 0
+
     with torch.no_grad():
-        for x, y in tqdm(testloader):
-            x = x.to(device)
-            pred = model(x).squeeze(dim=-1).detach().cpu().numpy()
-            y_pred.append(pred)
-            y_true.append(y.detach().cpu().numpy())
-    y_pred = np.concatenate(y_pred, axis=0)
-    y_true = np.concatenate(y_true, axis=0)
-    y_true[y_true < .1] = 0
-    print('auc roc: ', metrics.roc_auc_score(y_true, y_pred))
-    print(f"Accuracy: {accuracy_score(y_true, y_pred)}")
+        for x, y in test_loader:
+            y = y.to(torch.float32)
+            predicted_outputs = model(x)
+            _, predicted = torch.max(predicted_outputs, 1)
+            total += y.size(0)
+            running_accuracy += (predicted == y).sum().item()
+
+        test_accuracy = (100 * running_accuracy / total)
+        print(f'--- Test accuracy: {test_accuracy:.3f}%')
+    return test_accuracy
+
+
+def run_algorithm():
+    participants = [i for i in range(1, 5)]
+    test_accs = {}
+
+    for participant_n in participants:
+        print(f"------Participant number {participant_n}------")
+        speech_modes = ['imagined', 'inner']
+        for speech_mode in speech_modes:
+            print(f"-->\nSpeech mode: {speech_mode}\n")
+            # FEATURES
+            #data = np.load('features/even_windows/participant_01/imagined/features.npy')
+            #labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
+
+            # RAW
+            #filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
+
+            # PREPROCESSED
+            filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_mode}/preprocessed.csv'
+
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            #data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+            data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+            data = data.values
+            train_loader, val_loader, test_loader = prep_loaders(data, labels, two_d=False)
+
+            train_model(train_loader, val_loader)
+            test_acc = test_model(test_loader)
+            test_accs[f'{participant_n}_{speech_mode}'] = test_acc
+
+    df = pd.DataFrame()
+    for header, values in list(test_accs.items()):
+        if type(values) is float:
+            values = [values]
+        df[header] = values
+
+    savedir = f'classification_results/cnn_1d'
+
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    df.to_csv(Path(f'{savedir}/preprocessed_results.csv'), index=False)
 
 
 if __name__ == '__main__':
-    using_features()
-    #using_raw()
+
+    run_algorithm()
