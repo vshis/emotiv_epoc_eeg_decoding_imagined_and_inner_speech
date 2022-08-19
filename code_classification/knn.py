@@ -135,7 +135,7 @@ def knn_for_binary():
     df.to_csv(Path(f'knn_results/binary.csv'), index=False)
 
 
-def knn_for_raw_only():
+def knn_for_p00():
     speech_modes = ['imagined', 'inner']
     accuracies = {}
     for speech_mode in speech_modes:
@@ -192,7 +192,7 @@ def knn_for_feis():
 
 
 if __name__ == '__main__':
-    #participant_ns = [i for i in range(1, 5)]
-    #for participant_n in participant_ns:
-    #    knn_for_participant(participant_n)
+    participant_ns = [i for i in range(1, 5)]
+    for participant_n in participant_ns:
+        knn_for_participant(participant_n)
     knn_for_feis()

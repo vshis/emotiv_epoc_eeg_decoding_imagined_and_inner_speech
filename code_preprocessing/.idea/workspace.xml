@@ -2,10 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="85302d82-2e89-477d-8f0a-767ec7e18b12" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/feis.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/feis.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_01.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_01.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_02.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_02.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_03.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_03.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_04.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/ALL_CONVENTIONAL/participant_04.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000)/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000)/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, degree=2, kernel='poly')/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, degree=2, kernel='poly')/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, degree=4, kernel='poly')/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, degree=4, kernel='poly')/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, kernel='poly')/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, kernel='poly')/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, kernel='sigmoid')/binary.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/classification_results/SVC(cache_size=2000, kernel='sigmoid')/binary.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../code_classification/conventional_classifiers.py" beforeDir="false" afterPath="$PROJECT_DIR$/../code_classification/conventional_classifiers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/data_processing.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/data_processing.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/features/thinking/features.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/features/thinking/labels.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,12 +52,6 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
-  }
-}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\apps\diss\eeg_setup\data_processing" />
