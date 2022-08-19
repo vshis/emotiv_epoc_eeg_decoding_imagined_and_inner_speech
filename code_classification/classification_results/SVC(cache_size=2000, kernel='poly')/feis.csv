@@ -1,2 +1,2 @@
-Method,features_train_mean,features_train_std,features_test_mean,features_test_std,mfcc_train_mean,mfcc_train_std,mfcc_test_mean,mfcc_test_std
-"SVC(cache_size=2000, kernel='poly')",0.0779874213836478,0.0023532436394804,0.0377358490566037,0.0039777077486394,0.08238993710691823,0.005832464462575913,0.04025157232704402,0.01166492892515183
+Method,features_train_mean,features_train_std,features_test_mean,features_test_std,mfcc_train_mean,mfcc_train_std,mfcc_test_mean,mfcc_test_std,linear_train_mean,linear_train_std,linear_test_mean,linear_test_std
+"SVC(cache_size=2000, kernel='poly')",0.0779874213836478,0.0023532436394804,0.0377358490566037,0.0039777077486394,0.0823899371069182,0.0058324644625759,0.040251572327044,0.0116649289251518,0.07987421383647798,0.0008894424920585502,0.045283018867924525,0.005336654952351304

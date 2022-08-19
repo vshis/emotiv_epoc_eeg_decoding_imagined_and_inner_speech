@@ -1,2 +1,0 @@
-Method,raw_train_mean,raw_train_std,raw_test_mean,raw_test_std,preprocessed_train_mean,preprocessed_train_std,preprocessed_test_mean,preprocessed_test_std,features_train_mean,features_train_std,features_test_mean,features_test_std,mfcc_train_mean,mfcc_train_std,mfcc_test_mean,mfcc_test_std
-KNeighborsClassifier(n_jobs=-2),0.955991212,0.000425858,0.902509764,0.001545911,0.705838599,0.000402879,0.465502089,0.001923457,0.336477987,0.0075994,0.072955975,0.009904412,0.340251572,0.011766218,0.06163522,0.006413861

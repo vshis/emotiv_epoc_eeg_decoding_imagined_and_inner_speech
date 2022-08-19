@@ -103,9 +103,9 @@ def run_model_for_participant(participant_n: int, model):
         accuracies[f'preprocessed_{speech_mode}_train_std'] = std_train
         accuracies[f'preprocessed_{speech_mode}_test_mean'] = mean_test
         accuracies[f'preprocessed_{speech_mode}_test_std'] = std_test
-"""
+
         # Features
-        print("------------- Features")
+        print("------------- Frequency Features")
         features = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/features.npy')
         labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/labels.npy')
         features = pd.DataFrame(features)
@@ -126,15 +126,27 @@ def run_model_for_participant(participant_n: int, model):
         accuracies[f'mfcc_{speech_mode}_train_mean'] = mean_train
         accuracies[f'mfcc_{speech_mode}_train_std'] = std_train
         accuracies[f'mfcc_{speech_mode}_test_mean'] = mean_test
-        accuracies[f'mfcc_{speech_mode}_test_std'] = std_test
+        accuracies[f'mfcc_{speech_mode}_test_std'] = std_test"""
+
+        # Linear Features
+        print("------------- Linear Features")
+        features = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_features.npy')
+        labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_labels.npy')
+        features = pd.DataFrame(features)
+        labels = pd.DataFrame(labels)[0]
+        mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+        accuracies[f'linear_{speech_mode}_train_mean'] = mean_train
+        accuracies[f'linear_{speech_mode}_train_std'] = std_train
+        accuracies[f'linear_{speech_mode}_test_mean'] = mean_test
+        accuracies[f'linear_{speech_mode}_test_std'] = std_test
 
     savedir = _get_savedir(model)
 
     # if saving to new file
-    df = pd.DataFrame()
-    df['Method'] = [model]
+    #df = pd.DataFrame()
+    #df['Method'] = [model]
     # if adding to existing file
-    #df = pd.read_csv(f'{savedir}/participant_0{participant_n}.csv')
+    df = pd.read_csv(f'{savedir}/participant_0{participant_n}.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
@@ -152,7 +164,8 @@ def run_model_for_binary(model):
 
     accuracies = {}
     # Raw
-    """print("------------- Raw")
+    """
+    print("------------- Raw")
     filepath = f'binary_data/p01_imagined_raw_binary.csv'
     mean_train, std_train, mean_test, std_test = prep_and_run(model, filepath, 'raw')
     accuracies[f'raw_train_mean'] = mean_train
@@ -168,9 +181,9 @@ def run_model_for_binary(model):
     accuracies[f'preprocessed_train_std'] = std_train
     accuracies[f'preprocessed_test_mean'] = mean_test
     accuracies[f'preprocessed_test_std'] = std_test
-"""
+
     # Features
-    print("------------- Features")
+    print("------------- Frequency Features")
     features = np.load(f'features/even_windows/binary/features.npy')
     labels = np.load(f'features/even_windows/binary/labels.npy')
     features = pd.DataFrame(features)
@@ -191,15 +204,27 @@ def run_model_for_binary(model):
     accuracies[f'mfcc_train_mean'] = mean_train
     accuracies[f'mfcc_train_std'] = std_train
     accuracies[f'mfcc_test_mean'] = mean_test
-    accuracies[f'mfcc_test_std'] = std_test
+    accuracies[f'mfcc_test_std'] = std_test"""
+
+    # Linear features
+    print("------------- Linear Features")
+    features = np.load(f'features/even_windows/binary/linear_features.npy')
+    labels = np.load(f'features/even_windows/binary/linear_labels.npy')
+    features = pd.DataFrame(features)
+    labels = pd.DataFrame(labels)[0]
+    mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+    accuracies[f'linear_train_mean'] = mean_train
+    accuracies[f'linear_train_std'] = std_train
+    accuracies[f'linear_test_mean'] = mean_test
+    accuracies[f'linear_test_std'] = std_test
 
     savedir = _get_savedir(model)
 
     # if saving to new file
-    df = pd.DataFrame()
-    df['Method'] = [model]
+    #df = pd.DataFrame()
+    #df['Method'] = [model]
     # if adding to existing file
-    #df = pd.read_csv(f'{savedir}/binary.csv')
+    df = pd.read_csv(f'{savedir}/binary.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
@@ -269,9 +294,9 @@ def run_model_for_feis(model):
     accuracies[f'preprocessed_train_std'] = std_train
     accuracies[f'preprocessed_test_mean'] = mean_test
     accuracies[f'preprocessed_test_std'] = std_test
-"""
-    # Features
-    print("------------- Features")
+
+    # Frequency Features
+    print("------------- Frequency Features")
     features = np.load(f'features/even_windows/feis/features.npy')
     labels = np.load(f'features/even_windows/feis/labels.npy')
     features = pd.DataFrame(features)
@@ -293,14 +318,26 @@ def run_model_for_feis(model):
     accuracies[f'mfcc_train_std'] = std_train
     accuracies[f'mfcc_test_mean'] = mean_test
     accuracies[f'mfcc_test_std'] = std_test
+"""
+    # Linear Features
+    print("------------- Linear Features")
+    features = np.load(f'features/even_windows/feis/linear_features.npy')
+    labels = np.load(f'features/even_windows/feis/linear_labels.npy')
+    features = pd.DataFrame(features)
+    labels = pd.DataFrame(labels)[0]
+    mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+    accuracies[f'linear_train_mean'] = mean_train
+    accuracies[f'linear_train_std'] = std_train
+    accuracies[f'linear_test_mean'] = mean_test
+    accuracies[f'linear_test_std'] = std_test
 
     savedir = _get_savedir(model)
 
     # if saving to new file
-    df = pd.DataFrame()
-    df['Method'] = [model]
+    #df = pd.DataFrame()
+    #df['Method'] = [model]
     # if adding to existing file
-    #df = pd.read_csv(f'{savedir}/feis.csv')
+    df = pd.read_csv(f'{savedir}/feis.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
@@ -314,35 +351,35 @@ def run_model_for_feis(model):
 
 if __name__ == '__main__':
     models = [
-        #LinearDiscriminantAnalysis(),  # LDA
-        #SVC(kernel='rbf', cache_size=2000),  # SVM
+        LinearDiscriminantAnalysis(),  # LDA
+        SVC(kernel='rbf', cache_size=2000),  # SVM
         SVC(kernel='poly', degree=2, cache_size=2000),  # SVM
-        #SVC(kernel='poly', degree=3, cache_size=2000),  # SVM
+        SVC(kernel='poly', degree=3, cache_size=2000),  # SVM
         SVC(kernel='poly', degree=4, cache_size=2000),  # SVM
-        #SVC(kernel='sigmoid', cache_size=2000),  # SVM
-        #GaussianNB(),  # naive bayes
-        #AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
-        #AdaBoostClassifier(n_estimators=100, learning_rate=1.0),  # RF
-        #AdaBoostClassifier(n_estimators=200, learning_rate=1.0),  # RF
-        #AdaBoostClassifier(n_estimators=400, learning_rate=1.0),  # RF
-        #AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
-        #AdaBoostClassifier(n_estimators=50, learning_rate=0.5),  # RF
-        #AdaBoostClassifier(n_estimators=50, learning_rate=0.1),  # RF
-        #AdaBoostClassifier(n_estimators=50, learning_rate=1.5),  # RF
-        #AdaBoostClassifier(n_estimators=50, learning_rate=2.0),  # RF
-        #KNeighborsClassifier(n_neighbors=1, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=5, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=13, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
-        #KNeighborsClassifier(n_neighbors=131, n_jobs=-2),  # kNN
+        SVC(kernel='sigmoid', cache_size=2000),  # SVM
+        GaussianNB(),  # naive bayes
+        AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
+        AdaBoostClassifier(n_estimators=100, learning_rate=1.0),  # RF
+        AdaBoostClassifier(n_estimators=200, learning_rate=1.0),  # RF
+        AdaBoostClassifier(n_estimators=400, learning_rate=1.0),  # RF
+        AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
+        AdaBoostClassifier(n_estimators=50, learning_rate=0.5),  # RF
+        AdaBoostClassifier(n_estimators=50, learning_rate=0.1),  # RF
+        AdaBoostClassifier(n_estimators=50, learning_rate=1.5),  # RF
+        AdaBoostClassifier(n_estimators=50, learning_rate=2.0),  # RF
+        KNeighborsClassifier(n_neighbors=1, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=5, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=13, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=25, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=53, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=89, n_jobs=-2),  # kNN
+        KNeighborsClassifier(n_neighbors=131, n_jobs=-2),  # kNN
               ]
     participants = [i for i in range(1, 5)]
 
     for model in models:
         for participant_n in participants:
             run_model_for_participant(participant_n, model)
-        run_model_for_binary(model)
+        #run_model_for_binary(model)
         #run_model_for_p00(model)
-        run_model_for_feis(model)
+        #run_model_for_feis(model)

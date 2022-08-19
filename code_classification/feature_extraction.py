@@ -14,7 +14,35 @@ NUMBER_OF_WINDOWS = 5
 OVERLAP = False
 
 
-def extract_stat_features(channel):
+def extract_linear(channel):
+    mean = np.mean(channel)
+    abs_mean = abs(mean)
+    std = np.std(channel)
+    sum_data = np.sum(channel)
+    variance = np.var(channel)
+    maximum = np.max(channel)
+    abs_maximum = abs(maximum)
+    minimum = np.min(channel)
+    abs_minimum = abs(minimum)
+    min_plus_max = maximum + minimum
+    max_minus_min = maximum - minimum
+    features_list = [
+        mean,
+        abs_mean,
+        std,
+        sum_data,
+        variance,
+        maximum,
+        abs_maximum,
+        minimum,
+        abs_minimum,
+        min_plus_max,
+        max_minus_min
+    ]
+    return features_list
+
+
+def extract_non_linear(channel):
     sample_fs, power_spectral_density = periodogram(channel, fs=SAMPLING_FREQUENCY)
     hilbert = scipy.signal.hilbert(channel)
 
@@ -62,8 +90,10 @@ def _feature_windows(epoch_df: pd.DataFrame, features_type='frequency'):
             channel = window[column]
             if features_type == 'mfcc':
                 features_list = extract_mfcc(channel)
+            elif features_type == 'linear':
+                features_list = extract_linear(channel)
             else:
-                features_list = extract_stat_features(channel)
+                features_list = extract_non_linear(channel)
             window_features.append(features_list)
         window_features = list(chain.from_iterable(window_features))
         five_windows_features.append(window_features)
@@ -92,12 +122,8 @@ def get_features(filepath: str, savedir: str = None, verbose=True, features_type
     features = np.concatenate(features)
 
     if savedir is not None:
-        if features_type == 'mfcc':
-            np.save(file=Path(f"{savedir}mfcc_features.npy"), arr=features)
-            np.save(file=Path(f"{savedir}mfcc_labels.npy"), arr=labels)
-        else:
-            np.save(file=Path(f"{savedir}features.npy"), arr=features)
-            np.save(file=Path(f"{savedir}labels.npy"), arr=labels)
+        np.save(file=Path(f"{savedir}{features_type}_features.npy"), arr=features)
+        np.save(file=Path(f"{savedir}{features_type}_labels.npy"), arr=labels)
 
     return features, labels
 
@@ -106,7 +132,7 @@ def extract_participants_features(features_type='frequency'):
     for participant_n in range(1, 5):
         print(f"Participant {participant_n}...")
         for speech_type in ['imagined', 'inner']:
-            print(f"Speech type {speech_type}. Features type: {features_type}.")
+            print(f"Speech type: {speech_type}. Features type: {features_type}.")
             filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_type}/preprocessed.csv'
             save_dir = f'features/even_windows/participant_0{participant_n}/{speech_type}/'
             get_features(filepath=filepath, savedir=save_dir, verbose=False, features_type=features_type)
@@ -127,8 +153,8 @@ def extract_features_feis(features_type='frequency'):
 
 
 if __name__ == '__main__':
-    #extract_participants_features(features_type='mfcc')
-    #extract_features_binary(features_type='mfcc')
+    #extract_participants_features(features_type='linear')
+    extract_features_binary(features_type='linear')
     #extract_features_feis()
-    #extract_features_feis(features_type='mfcc')
+    extract_features_feis(features_type='linear')
     exit(0)

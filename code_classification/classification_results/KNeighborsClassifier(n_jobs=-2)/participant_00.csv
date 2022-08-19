@@ -1,0 +1,2 @@
+Method,raw_imagined_train_mean,raw_imagined_train_std,raw_imagined_test_mean,raw_imagined_test_std,raw_inner_train_mean,raw_inner_train_std,raw_inner_test_mean,raw_inner_test_std
+KNeighborsClassifier(n_jobs=-2),0.3072591145833334,0.0011397878515632567,0.06310221354166667,0.000571634418256377,0.30689697265625,0.0018838683316520248,0.06201171875,0.00030099677748871934
