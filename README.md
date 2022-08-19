@@ -17,3 +17,4 @@ Package versions used:
 * Matplotlib 3.5.1
 * Antropy 0.1.4
 * Hurst 0.0.5
+* Librosa 0.9.2

@@ -1,2 +1,0 @@
-Method,features_imagined_train_mean,features_imagined_train_std,features_imagined_test_mean,features_imagined_test_std,features_inner_train_mean,features_inner_train_std,features_inner_test_mean,features_inner_test_std
-SVC(cache_size=2000),0.09592476489028212,0.0064739424539383625,0.04952978056426332,0.006981522712012564,0.07852664576802508,0.0034124672503255855,0.03887147335423198,0.008077804844341773

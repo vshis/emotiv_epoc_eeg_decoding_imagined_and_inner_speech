@@ -1,2 +1,0 @@
-Method,features_train_mean,features_train_std,features_test_mean,features_test_std
-SVC(cache_size=2000),0.08081761006289308,0.0023532436394804656,0.03144654088050315,0.01125065649056498
