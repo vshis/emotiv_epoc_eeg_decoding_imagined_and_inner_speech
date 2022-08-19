@@ -11,6 +11,19 @@ from pathlib import Path
 import os
 
 
+def _get_savedir(model):
+    savedir = f'classification_results/{model}'
+
+    if str(model) == 'SVC()':
+        savedir = f'classification_results/{model}_{model.kernel}'
+    elif str(model) == 'AdaBoostClassifier()':
+        savedir = f'classification_results/{model}_{model.n_estimators}_{model.learning_rate}'
+    elif str(model) == 'KNeighborsClassifier()':
+        savedir = f'classification_results/{model}_{model.n_neighbors}'
+
+    return savedir
+
+
 def run_model(data, labels, model):
     """Returns accuracies: mean_train, std_train, mean_test, std_test"""
     print(f"--- Running {model}")
@@ -74,7 +87,7 @@ def run_model_for_participant(participant_n: int, model):
     for speech_mode in speech_modes:
         print(f"------\nSpeech mode: {speech_mode}\n------")
         # Raw
-        print("------------- Raw")
+        """print("------------- Raw")
         filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
         mean_train, std_train, mean_test, std_test = prep_and_run(model, filepath, 'raw')
         accuracies[f'raw_{speech_mode}_train_mean'] = mean_train
@@ -90,7 +103,7 @@ def run_model_for_participant(participant_n: int, model):
         accuracies[f'preprocessed_{speech_mode}_train_std'] = std_train
         accuracies[f'preprocessed_{speech_mode}_test_mean'] = mean_test
         accuracies[f'preprocessed_{speech_mode}_test_std'] = std_test
-
+"""
         # Features
         print("------------- Features")
         features = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/features.npy')
@@ -103,22 +116,30 @@ def run_model_for_participant(participant_n: int, model):
         accuracies[f'features_{speech_mode}_test_mean'] = mean_test
         accuracies[f'features_{speech_mode}_test_std'] = std_test
 
+        # MFCC Features
+        print("------------- MFCC Features")
+        features = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_features.npy')
+        labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_labels.npy')
+        features = pd.DataFrame(features)
+        labels = pd.DataFrame(labels)[0]
+        mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+        accuracies[f'mfcc_{speech_mode}_train_mean'] = mean_train
+        accuracies[f'mfcc_{speech_mode}_train_std'] = std_train
+        accuracies[f'mfcc_{speech_mode}_test_mean'] = mean_test
+        accuracies[f'mfcc_{speech_mode}_test_std'] = std_test
+
+    savedir = _get_savedir(model)
+
+    # if saving to new file
     df = pd.DataFrame()
     df['Method'] = [model]
+    # if adding to existing file
+    #df = pd.read_csv(f'{savedir}/participant_0{participant_n}.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
             values = [values]
         df[header] = values
-
-    savedir = f'classification_results/{model}'
-
-    if str(model) == 'SVC()':
-        savedir = f'classification_results/{model}_{model.kernel}'
-    elif str(model) == 'AdaBoostClassifier()':
-        savedir = f'classification_results/{model}_{model.n_estimators}_{model.learning_rate}'
-    elif str(model) == 'KNeighborsClassifier()':
-        savedir = f'classification_results/{model}_{model.n_neighbors}'
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
@@ -131,7 +152,7 @@ def run_model_for_binary(model):
 
     accuracies = {}
     # Raw
-    print("------------- Raw")
+    """print("------------- Raw")
     filepath = f'binary_data/p01_imagined_raw_binary.csv'
     mean_train, std_train, mean_test, std_test = prep_and_run(model, filepath, 'raw')
     accuracies[f'raw_train_mean'] = mean_train
@@ -147,7 +168,7 @@ def run_model_for_binary(model):
     accuracies[f'preprocessed_train_std'] = std_train
     accuracies[f'preprocessed_test_mean'] = mean_test
     accuracies[f'preprocessed_test_std'] = std_test
-
+"""
     # Features
     print("------------- Features")
     features = np.load(f'features/even_windows/binary/features.npy')
@@ -160,22 +181,30 @@ def run_model_for_binary(model):
     accuracies[f'features_test_mean'] = mean_test
     accuracies[f'features_test_std'] = std_test
 
+    # MFCC features
+    print("------------- MFCC Features")
+    features = np.load(f'features/even_windows/binary/mfcc_features.npy')
+    labels = np.load(f'features/even_windows/binary/mfcc_labels.npy')
+    features = pd.DataFrame(features)
+    labels = pd.DataFrame(labels)[0]
+    mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+    accuracies[f'mfcc_train_mean'] = mean_train
+    accuracies[f'mfcc_train_std'] = std_train
+    accuracies[f'mfcc_test_mean'] = mean_test
+    accuracies[f'mfcc_test_std'] = std_test
+
+    savedir = _get_savedir(model)
+
+    # if saving to new file
     df = pd.DataFrame()
     df['Method'] = [model]
+    # if adding to existing file
+    #df = pd.read_csv(f'{savedir}/binary.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
             values = [values]
         df[header] = values
-
-    savedir = f'classification_results/{model}'
-
-    if str(model) == 'SVC()':
-        savedir = f'classification_results/{model}_{model.kernel}'
-    elif str(model) == 'AdaBoostClassifier()':
-        savedir = f'classification_results/{model}_{model.n_estimators}_{model.learning_rate}'
-    elif str(model) == 'KNeighborsClassifier()':
-        savedir = f'classification_results/{model}_{model.n_neighbors}'
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
@@ -199,22 +228,18 @@ def run_model_for_p00(model):
         accuracies[f'raw_{speech_mode}_test_mean'] = mean_test
         accuracies[f'raw_{speech_mode}_test_std'] = std_test
 
+    savedir = _get_savedir(model)
+
+    # if saving to new file
     df = pd.DataFrame()
     df['Method'] = [model]
+    # if adding to existing file
+    #df = pd.read_csv(f'{savedir}/participant_00.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
             values = [values]
         df[header] = values
-
-    savedir = f'classification_results/{model}'
-
-    if str(model) == 'SVC()':
-        savedir = f'classification_results/{model}_{model.kernel}'
-    elif str(model) == 'AdaBoostClassifier()':
-        savedir = f'classification_results/{model}_{model.n_estimators}_{model.learning_rate}'
-    elif str(model) == 'KNeighborsClassifier()':
-        savedir = f'classification_results/{model}_{model.n_neighbors}'
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
@@ -228,7 +253,7 @@ def run_model_for_feis(model):
     accuracies = {}
 
     # Raw
-    print("------------- Raw")
+    """print("------------- Raw")
     filepath = f'feis_data/feis-01-thinking.csv'
     mean_train, std_train, mean_test, std_test = prep_and_run(model, filepath, 'feis_raw')
     accuracies[f'raw_train_mean'] = mean_train
@@ -244,7 +269,7 @@ def run_model_for_feis(model):
     accuracies[f'preprocessed_train_std'] = std_train
     accuracies[f'preprocessed_test_mean'] = mean_test
     accuracies[f'preprocessed_test_std'] = std_test
-
+"""
     # Features
     print("------------- Features")
     features = np.load(f'features/even_windows/feis/features.npy')
@@ -257,22 +282,30 @@ def run_model_for_feis(model):
     accuracies[f'features_test_mean'] = mean_test
     accuracies[f'features_test_std'] = std_test
 
+    # MFCC Features
+    print("------------- MFCC Features")
+    features = np.load(f'features/even_windows/feis/mfcc_features.npy')
+    labels = np.load(f'features/even_windows/feis/mfcc_labels.npy')
+    features = pd.DataFrame(features)
+    labels = pd.DataFrame(labels)[0]
+    mean_train, std_train, mean_test, std_test = run_model(features, labels, model)
+    accuracies[f'mfcc_train_mean'] = mean_train
+    accuracies[f'mfcc_train_std'] = std_train
+    accuracies[f'mfcc_test_mean'] = mean_test
+    accuracies[f'mfcc_test_std'] = std_test
+
+    savedir = _get_savedir(model)
+
+    # if saving to new file
     df = pd.DataFrame()
     df['Method'] = [model]
+    # if adding to existing file
+    #df = pd.read_csv(f'{savedir}/feis.csv')
 
     for header, values in list(accuracies.items()):
         if type(values) is float:
             values = [values]
         df[header] = values
-
-    savedir = f'classification_results/{model}'
-
-    if str(model) == 'SVC()':
-        savedir = f'classification_results/{model}_{model.kernel}'
-    elif str(model) == 'AdaBoostClassifier()':
-        savedir = f'classification_results/{model}_{model.n_estimators}_{model.learning_rate}'
-    elif str(model) == 'KNeighborsClassifier()':
-        savedir = f'classification_results/{model}_{model.n_neighbors}'
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
@@ -283,7 +316,9 @@ if __name__ == '__main__':
     models = [
         #LinearDiscriminantAnalysis(),  # LDA
         #SVC(kernel='rbf', cache_size=2000),  # SVM
-        #SVC(kernel='poly', cache_size=2000),  # SVM
+        SVC(kernel='poly', degree=2, cache_size=2000),  # SVM
+        #SVC(kernel='poly', degree=3, cache_size=2000),  # SVM
+        SVC(kernel='poly', degree=4, cache_size=2000),  # SVM
         #SVC(kernel='sigmoid', cache_size=2000),  # SVM
         #GaussianNB(),  # naive bayes
         #AdaBoostClassifier(n_estimators=50, learning_rate=1.0),  # RF
@@ -309,5 +344,5 @@ if __name__ == '__main__':
         for participant_n in participants:
             run_model_for_participant(participant_n, model)
         run_model_for_binary(model)
-        run_model_for_p00(model)
+        #run_model_for_p00(model)
         run_model_for_feis(model)

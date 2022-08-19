@@ -1,0 +1,2 @@
+Method,features_train_mean,features_train_std,features_test_mean,features_test_std,mfcc_train_mean,mfcc_train_std,mfcc_test_mean,mfcc_test_std
+"SVC(cache_size=2000, degree=2, kernel='poly')",0.0880503144654088,0.0038769899389741983,0.03647798742138365,0.004706487278960932,0.0830188679245283,0.007059730918441397,0.04779874213836479,0.004706487278960935
