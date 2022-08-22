@@ -23,8 +23,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
 NUMBER_OF_EPOCHS = 50
-BATCH_SIZE = 32
-LEARNING_RATE = 0.01
+BATCH_SIZE = 8
+LEARNING_RATE = 0.1
 
 
 class ShallowConvNet(nn.Module):
@@ -271,7 +271,7 @@ class SpeechDataset(Dataset):
 
 
 def prep_data(data, labels, two_d=False, data_type='raw'):
-    """Encodes labels, normalises data. Returns data loaders."""
+    """returns normalised data and labels tensors"""
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
 
@@ -293,23 +293,84 @@ def prep_data(data, labels, two_d=False, data_type='raw'):
 
     return data_norm, y
 
-    # split into 80/10/10 train/val/test
-    input_train, x_rem, target_train, y_rem = train_test_split(data_norm, y, test_size=0.2, random_state=42)
-    input_val, input_test, target_val, target_test = train_test_split(x_rem, y_rem, test_size=0.5, random_state=42)
 
-    print(f"input_train: {input_train.shape}, input_val: {input_val.shape}, input_test: {input_test.shape}\n"
-          f"target_train: {target_train.shape}, target_val: {target_val.shape}, target_test: {target_test.shape}")
-    batch_size = BATCH_SIZE
+def build_dataset(batch_size, two_d=False, data_type='raw'):
+    """Encodes labels, normalises data. Returns data loaders. Splits into 90/10 train/test. Returns loaders."""
+    filepath = f'../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv'
+    df = pd.read_csv(filepath)
+    labels = df['Label']
+    data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+    data = data.values
+
+    encoder = LabelBinarizer()
+    y = encoder.fit_transform(labels)
+
+    y = torch.from_numpy(y).float().to(device)
+    data = torch.from_numpy(data).float().to(device)
+
+    data_mean = torch.mean(data, dim=0)
+    data_var = torch.var(data, dim=0)
+    data_norm = (data - data_mean) / torch.sqrt(data_var)
+
+    # for 2D clf
+    if two_d:
+        if data_type == 'raw':
+            y = y.reshape(320, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(320, -1, 14)
+        elif data_type == 'preprocessed':
+            y = y.reshape(319, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(319, -1, 14)
+    # split into 80/10/10 train/val/test
+    input_train, input_test, target_train, target_test = train_test_split(data_norm, y, test_size=0.1)
+
+    #print(f"input_train: {input_train.shape}, input_test: {input_test.shape}\n"
+    #      f"target_train: {target_train.shape}, target_test: {target_test.shape}")
 
     train = SpeechDataset(input_train, target_train)
-    val = SpeechDataset(input_val, target_val)
     test = SpeechDataset(input_test, target_test)
 
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test, batch_size=batch_size, shuffle=False)
 
-    return train_loader, val_loader, test_loader
+    return train_loader, test_loader
+
+
+def build_optimizer(model, optimizer, lr):
+    if optimizer == 'sgd':
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+    elif optimizer == 'adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    return optimizer
+
+
+def train_epoch(model, loader, optimizer):
+    criterion = nn.CrossEntropyLoss()
+    cum_loss = 0
+    for data, target in loader:
+        optimizer.zero_grad()
+
+        loss = criterion(model(data), target)
+        cum_loss += loss.item()
+
+        loss.backward()
+        optimizer.step()
+
+        wandb.log({"batch loss": loss.item()})
+
+    return cum_loss / len(loader)
+
+
+def train(config=None):
+    with wandb.init(config=config):
+        config = wandb.config
+
+        train_loader, test_loader = build_dataset(config.batch_size, two_d=True, data_type='raw')
+        model = EEGNet(in_channels=1, num_classes=16).to(device)
+        optimizer = build_optimizer(model, config.optimizer, config.learning_rate)
+
+        for epoch in range(config.epochs):
+            avg_loss = train_epoch(model, train_loader, optimizer)
+            wandb.log({'loss': avg_loss, 'epoch': epoch})
 
 
 def train_model(train_loader, val_loader):
@@ -331,10 +392,10 @@ def train_model(train_loader, val_loader):
 
     print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)  # 12.5% test acc
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=0.1, momentum=0.5)  # 12.5% test acc
     # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -483,4 +544,29 @@ def run_algorithm():
 
 
 if __name__ == '__main__':
-    run_algorithm()
+    wandb.login()
+    sweep_config = {'method': 'bayes'}
+    metric = {'name': 'loss', 'goal': 'minimize'}
+    sweep_config['metric'] = metric
+
+    parameters_dict = {
+        'optimizer': {
+            'values': ['adam', 'sgd']
+        },
+        'learning_rate': {
+            'values': [0.1, 0.01, 0.001, 0.0001, 0.00001]
+        },
+        'batch_size': {
+            'values': [2, 4, 8, 16, 32, 64, 128]
+        },
+        'epochs': {
+            'values': [10, 20, 30, 40, 50]
+        }
+    }
+    sweep_config['parameters'] = parameters_dict
+
+    sweep_id = wandb.sweep(sweep_config, project='EEGNet')
+
+    wandb.agent(sweep_id, train, count=5)
+
+    #run_algorithm()
