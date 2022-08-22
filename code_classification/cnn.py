@@ -19,9 +19,9 @@ from pathlib import Path
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 10
-BATCH_SIZE = 4
-LEARNING_RATE = 1e-06
+NUMBER_OF_EPOCHS = 50
+BATCH_SIZE = 64
+LEARNING_RATE = 0.0001
 
 
 class EEGNet(nn.Module):
@@ -240,19 +240,10 @@ class SpeechDataset(Dataset):
     def __len__(self):
         return len(self.x)
 
-    def _augmentations(self, x_data, y_data):
-        # flip
-        if np.random.rand() < 0.5:
-            x_data = x_data[::-1]
-            y_data = y_data[::-1]
-        return x_data, y_data
-
     def __getitem__(self, idx):
         x = self.x[idx]
         y = self.y[idx]
         # look up dataset with augmentation
-        # if self.mode == 'train':
-        #    x, y = self._augmentations(x, y)
         out_x = x  # torch.from_numpy(x).float().to(device)
         out_y = y  # torch.from_numpy(y).float().to(device)  # float
         return out_x.unsqueeze(0), torch.max(out_y, 0)[1]
@@ -300,6 +291,7 @@ def train_model(train_loader, val_loader):
     lr = LEARNING_RATE
 
     criterion = nn.CrossEntropyLoss()
+    #criterion = nn.NLLLoss()
 
     # Build model, initial weight and optimizer
     #model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
@@ -308,8 +300,15 @@ def train_model(train_loader, val_loader):
     #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
 
     model = EEGNet(in_channels=1, num_classes=16).to(device)
+    print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    #optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
+    # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
+    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, weight_decay=0.1, momentum=0.5)  # 12.5% test acc
+    #optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
+    #optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
     #optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
     best_accuracy = 0.0
@@ -344,13 +343,15 @@ def train_model(train_loader, val_loader):
 
         val_loss_value = running_val_loss/len(val_loader)
 
+        #scheduler.step(val_loss_value)
+
         accuracy = (100 * running_accuracy / total)
 
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), 'model.pt')
             best_accuracy = accuracy
 
-        print(f"Epoch {epoch+1} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
+        print(f"Epoch {epoch+1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
 def test_model(test_loader):
@@ -404,7 +405,7 @@ def run_algorithm():
 
             train_model(train_loader, val_loader)
             test_acc = test_model(test_loader)
-            test_accs[f'{participant_n}_{speech_mode}'] = test_acc
+            test_accs[f'p{participant_n}_{speech_mode}'] = test_acc
             exit()
 
     df = pd.DataFrame()
