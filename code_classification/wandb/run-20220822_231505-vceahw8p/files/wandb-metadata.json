@@ -1,0 +1,24 @@
+{
+    "os": "Windows-10-10.0.19043-SP0",
+    "python": "3.10.6",
+    "heartbeatAt": "2022-08-22T22:15:06.335948",
+    "startedAt": "2022-08-22T22:15:05.566144",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3050",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\apps\\eeg_setup\\code_classification\\sweep.py",
+    "codePath": "code_classification\\sweep.py",
+    "git": {
+        "remote": "https://github.com/vshis/diss.git",
+        "commit": "9221c0aa4b2f0309cd979e3a66eee5a4e58edc81"
+    },
+    "email": "",
+    "root": "C:/apps/eeg_setup",
+    "host": "DESKTOP-1M8BVPS",
+    "username": "vshis",
+    "executable": "C:\\Users\\vshis\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
+}

@@ -27,7 +27,7 @@ def _get_savedir(model):
 def run_model(data, labels, model):
     """Returns accuracies: mean_train, std_train, mean_test, std_test"""
     print(f"--- Running {model}")
-    folds = 3
+    folds = 5
     kfold = KFold(folds, shuffle=True)
 
     train_accuracies = []
