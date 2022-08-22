@@ -6,6 +6,7 @@ import numpy as np
 import time
 from sklearn.metrics import cohen_kappa_score, f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelBinarizer
 from torch.utils.data import DataLoader, Dataset
 from torch.optim.optimizer import Optimizer
@@ -15,16 +16,45 @@ from sklearn import metrics
 from torchinfo import summary
 import os
 from pathlib import Path
+import torchvision
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
 NUMBER_OF_EPOCHS = 50
-BATCH_SIZE = 64
-LEARNING_RATE = 0.0001
+BATCH_SIZE = 8
+LEARNING_RATE = 0.1
+
+
+class ShallowConvNet(nn.Module):
+    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
+    def __init__(self, in_channels, num_classes):
+        super(ShallowConvNet, self).__init__()
+
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=40, kernel_size=(48, 1))
+        self.conv2 = nn.Conv2d(in_channels=40, out_channels=40, kernel_size=(1, 14), bias=False)
+        self.batchnorm1 = nn.BatchNorm2d(40, eps=1e-05, momentum=0.9)
+        self.pool1 = nn.AvgPool2d(kernel_size=(75, 1), stride=(15, 1))
+        self.drop1 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1760, num_classes)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.batchnorm1(x)
+        x = torch.square(x)
+        x = self.pool1(x)
+        x = torch.log(x)
+        x = self.drop1(x)
+        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
+        x = self.fc1(x)
+        x = self.softmax(x)
+        return x
 
 
 class EEGNet(nn.Module):
+    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
     def __init__(self, in_channels, num_classes):
         super(EEGNet, self).__init__()
 
@@ -58,7 +88,6 @@ class EEGNet(nn.Module):
         self.fc1 = nn.Linear(352, num_classes)
         self.softmax = nn.Softmax(dim=1)
 
-
     def forward(self, x):
         # Layer 1
         x = self.conv1(x)
@@ -78,7 +107,7 @@ class EEGNet(nn.Module):
         # Layer 4
         x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
         x = self.fc1(x)
-        x = self.softmax(x)
+        #x = self.softmax(x)
         return x
 
 
@@ -86,36 +115,24 @@ class Conv2DClassifier(nn.Module):
     def __init__(self, channels_in, num_classes):
         super(Conv2DClassifier, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=12, kernel_size=(154, 3), stride=1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=12, out_channels=12, kernel_size=(11, 3), stride=1, padding=1)
-        self.conv3 = nn.Conv2d(in_channels=12, out_channels=24, kernel_size=(11, 3), stride=1, padding=1)
-        self.conv4 = nn.Conv2d(in_channels=24, out_channels=24, kernel_size=(11, 3), stride=1, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=12, kernel_size=(153, 1))
 
-        self.fc1 = nn.Linear(48384, num_classes)
+        self.fc1 = nn.Linear(612, num_classes)
 
         self.bn1 = nn.BatchNorm2d(12)
-        self.bn2 = nn.BatchNorm2d(24)
 
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool = nn.MaxPool2d(kernel_size=12)
 
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         #print(x.shape)
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn1(self.conv2(x)))
-        #print(x.shape)
+        x = self.conv1(x)
         x = self.maxpool(x)
-        x = F.relu(self.bn2(self.conv3(x)))
-        x = F.relu(self.bn2(self.conv4(x)))
-        #print(x.shape)
-        #print(x.shape)
-        #print(x.shape)
+
         x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
         x = self.fc1(x)
-        #print(x.shape)
-        #print(x.shape)
-        #print(x.shape)
+        x = self.softmax(x)
         return x
 
 
@@ -232,10 +249,9 @@ class Conv1DFeaturesClassifier(nn.Module):
 
 
 class SpeechDataset(Dataset):
-    def __init__(self, x, y, mode='train'):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.mode = mode
 
     def __len__(self):
         return len(self.x)
@@ -249,7 +265,7 @@ class SpeechDataset(Dataset):
         return out_x.unsqueeze(0), torch.max(out_y, 0)[1]
 
 
-def prep_loaders(data, labels, two_d=False):
+def prep_data(data, labels, two_d=False, data_type='raw'):
     """Encodes labels, normalises data. Returns data loaders."""
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
@@ -261,10 +277,16 @@ def prep_loaders(data, labels, two_d=False):
     data_var = torch.var(data, dim=0)
     data_norm = (data - data_mean) / torch.sqrt(data_var)
 
+    # for 2D clf
     if two_d:
-        # for 2D clf
-        y = y.reshape(320, -1, 16)[:, 0, :]
-        data_norm = data_norm.reshape(320, -1, 14)
+        if data_type == 'raw':
+            y = y.reshape(320, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(320, -1, 14)
+        elif data_type == 'preprocessed':
+            y = y.reshape(319, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(319, -1, 14)
+
+    return data_norm, y
 
     # split into 80/10/10 train/val/test
     input_train, x_rem, target_train, y_rem = train_test_split(data_norm, y, test_size=0.2, random_state=42)
@@ -274,9 +296,9 @@ def prep_loaders(data, labels, two_d=False):
           f"target_train: {target_train.shape}, target_val: {target_val.shape}, target_test: {target_test.shape}")
     batch_size = BATCH_SIZE
 
-    train = SpeechDataset(input_train, target_train, mode='train')
-    val = SpeechDataset(input_val, target_val, mode='val')
-    test = SpeechDataset(input_test, target_test, mode='test')
+    train = SpeechDataset(input_train, target_train)
+    val = SpeechDataset(input_val, target_val)
+    test = SpeechDataset(input_test, target_test)
 
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val, batch_size=batch_size, shuffle=False)
@@ -300,6 +322,8 @@ def train_model(train_loader, val_loader):
     #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
 
     model = EEGNet(in_channels=1, num_classes=16).to(device)
+    #model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+
     print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
@@ -320,6 +344,7 @@ def train_model(train_loader, val_loader):
         total = 0
         #p_bar = tqdm(train_loader)
         p_bar = train_loader
+        model.train()
         for x, y in p_bar:
             optimizer.zero_grad()  # clear gradients
             predicted_outputs = model(x)  # forward pass
@@ -343,15 +368,15 @@ def train_model(train_loader, val_loader):
 
         val_loss_value = running_val_loss/len(val_loader)
 
-        #scheduler.step(val_loss_value)
+        scheduler.step(val_loss_value)
 
         accuracy = (100 * running_accuracy / total)
 
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), 'model.pt')
             best_accuracy = accuracy
-
-        print(f"Epoch {epoch+1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
+        if (epoch+1) % 10 == 0:
+            print(f"Epoch {epoch+1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
 def test_model(test_loader):
@@ -360,6 +385,7 @@ def test_model(test_loader):
     #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
     #model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
     model = EEGNet(in_channels=1, num_classes=16).to(device)
+    #model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -379,46 +405,76 @@ def test_model(test_loader):
 
 def run_algorithm():
     participants = [i for i in range(1, 5)]
-    test_accs = {}
 
     for participant_n in participants:
-        print(f"------Participant number {participant_n}------")
-        speech_modes = ['imagined', 'inner']
-        for speech_mode in speech_modes:
-            print(f"-->\nSpeech mode: {speech_mode}\n")
-            # FEATURES
-            #data = np.load('features/even_windows/participant_01/imagined/features.npy')
-            #labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
+        results = {}
+        print(f"------\nParticipant number {participant_n}\n------")
+        data_types = ['raw', 'preprocessed']
+        for data_type in data_types:
+            print(f"----Data type: {data_type}----")
+            speech_modes = ['imagined', 'inner']
+            for speech_mode in speech_modes:
+                print(f"-->\nSpeech mode: {speech_mode}\n")
+                # FEATURES
+                #data = np.load('features/even_windows/participant_01/imagined/features.npy')
+                #labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
 
-            # RAW
-            filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
+                # RAW
+                if data_type == 'raw':
+                    filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
+                    df = pd.read_csv(filepath)
+                    labels = df['Label']
+                    data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
 
-            # PREPROCESSED
-            #filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_mode}/preprocessed.csv'
+                # PREPROCESSED
+                elif data_type == 'preprocessed':
+                    filepath = f'../data_preprocessed/participant_0{participant_n}/{speech_mode}/preprocessed.csv'
+                    df = pd.read_csv(filepath)
+                    labels = df['Label']
+                    data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
 
-            df = pd.read_csv(filepath)
-            labels = df['Label']
-            data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
-            #data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
-            data = data.values
-            train_loader, val_loader, test_loader = prep_loaders(data, labels, two_d=True)
+                data = data.values
+                #train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
+                data, labels = prep_data(data, labels, two_d=True, data_type=data_type)
+                dataset = SpeechDataset(data, labels)
 
-            train_model(train_loader, val_loader)
-            test_acc = test_model(test_loader)
-            test_accs[f'p{participant_n}_{speech_mode}'] = test_acc
-            exit()
+                folds = 5
+                kfold = KFold(n_splits=folds, shuffle=True)
+                accs = []
+                for fold_n, (train_ids, val_test_ids) in enumerate(kfold.split(dataset)):
+                    print(f"--------------------------\nFold {fold_n+1}/{folds}\n--------------------------")
+                    val_ids, test_ids = train_test_split(val_test_ids, test_size=0.5)
 
-    df = pd.DataFrame()
-    for header, values in list(test_accs.items()):
-        if type(values) is float:
-            values = [values]
-        df[header] = values
+                    train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+                    val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
+                    test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
 
-    savedir = f'classification_results/eegnet'
+                    train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_subsampler)
+                    val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_subsampler)
+                    test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
-    if not os.path.exists(savedir):
-        os.makedirs(savedir)
-    df.to_csv(Path(f'{savedir}/raw_results.csv'), index=False)
+                    train_model(train_loader, val_loader)
+                    test_acc = test_model(test_loader)
+                    accs.append(test_acc)
+
+                mean = float(np.mean(accs))
+                std = float(np.std(accs))
+                print(f"Participant 0{participant_n} {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
+                results[f'mean_p{participant_n}_{speech_mode}'] = mean
+                results[f'std_p{participant_n}_{speech_mode}'] = std
+        exit()
+
+        df = pd.DataFrame()
+        for header, values in list(results.items()):
+            if type(values) is float:
+                values = [values]
+            df[header] = values
+
+        savedir = f'classification_results/shallow_conv_net'
+
+        if not os.path.exists(savedir):
+            os.makedirs(savedir)
+        df.to_csv(Path(f'{savedir}/p0{participant_n}_results.csv'), index=False)
 
 
 if __name__ == '__main__':
