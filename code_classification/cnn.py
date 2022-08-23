@@ -22,27 +22,31 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 50
-BATCH_SIZE = 32
-LEARNING_RATE = 0.01
+NUMBER_OF_EPOCHS = 40
+BATCH_SIZE = 64
+LEARNING_RATE = 0.1
 
 
 class ShallowConvNet(nn.Module):
-    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
+    """
+    From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py
+    Original paper: https://onlinelibrary.wiley.com/doi/10.1002/hbm.23730
+    """
 
     def __init__(self, in_channels, num_classes):
         super(ShallowConvNet, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=40, kernel_size=(48, 1))
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=40, kernel_size=(25, 1))
         self.conv2 = nn.Conv2d(in_channels=40, out_channels=40, kernel_size=(1, 14), bias=False)
-        self.batchnorm1 = nn.BatchNorm2d(40, eps=1e-05, momentum=0.9)
+        self.batchnorm1 = nn.BatchNorm2d(40)
         self.pool1 = nn.AvgPool2d(kernel_size=(75, 1), stride=(15, 1))
         self.drop1 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(1760, num_classes)
+        self.fc1 = nn.Linear(1800, num_classes)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.conv1(x)
+        x = self.batchnorm1(x)
         x = self.conv2(x)
         x = self.batchnorm1(x)
         x = torch.square(x)
@@ -112,7 +116,73 @@ class EEGNet(nn.Module):
         # Layer 4
         x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
         x = self.fc1(x)
-        # x = self.softmax(x)
+        x = self.softmax(x)
+        return x
+
+
+class EEGNet1D(nn.Module):
+    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
+
+    def __init__(self, in_channels, num_classes):
+        super(EEGNet1D, self).__init__()
+
+        # parameters
+        self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
+        self.kernel_length = 128  # kernel size for first convolution, half the sampling rate
+        self.eeg_channels = 14  # number of EEG channels
+        self.F1 = 8  # number of temporal filters
+        self.F2 = self.D * self.F1  # number of point wise filters to learn
+        self.dropout_rate = 0.5  # dropout rate
+
+        # first layer - temporal convolution
+        self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=self.F1, kernel_size=1,
+                               padding='same', bias=False)
+        self.batchnorm1 = nn.BatchNorm1d(self.F1)
+
+        # second layer - depthwise convolution
+        self.depth_conv1 = nn.Conv1d(in_channels=self.F1, out_channels=self.F2, kernel_size=self.eeg_channels,
+                                     groups=self.F1, bias=False)
+        self.batchnorm2 = nn.BatchNorm1d(self.F2)
+        self.pooling1 = nn.AvgPool1d(kernel_size=1)
+
+        # third layer - depthwise-separable convolution (depthwise convolution + pointwise convolution)
+        self.depth_conv2 = nn.Conv1d(in_channels=self.F2, out_channels=self.F2, kernel_size=1,
+                                     groups=self.F2, bias=False)
+        self.point_conv = nn.Conv1d(in_channels=self.F2, out_channels=self.F2, kernel_size=1, bias=False)  # pointwise convolution
+        self.separable_conv = torch.nn.Sequential(self.depth_conv2, self.point_conv)
+        self.batchnorm3 = nn.BatchNorm1d(self.F2)
+        self.pooling2 = nn.AvgPool1d(kernel_size=1)
+
+        # fully connected output
+        self.fc1 = nn.Linear(352, num_classes)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        # Layer 1
+        x = self.conv1(x)
+        x = self.batchnorm1(x)
+        print(x.shape)
+        # Layer 2
+        x = self.depth_conv1(x)
+        x = self.batchnorm2(x)
+        x = F.elu(x)
+        x = self.pooling1(x)
+        x = F.dropout(x, self.dropout_rate)
+        print(x.shape)
+        # Layer 3
+        x = self.separable_conv(x)
+        x = self.batchnorm3(x)
+        x = F.elu(x)
+        print(x.shape)
+        x = self.pooling2(x)
+        print(x.shape)
+        x = F.dropout(x, self.dropout_rate)
+        # Layer 4
+        print(x.shape)
+        exit()
+        x = x.view(-1, x.shape[-1] * x.shape[-2])
+        x = self.fc1(x)
+        x = self.softmax(x)
         return x
 
 
@@ -317,8 +387,8 @@ def train_model(train_loader, val_loader):
     n_epochs = NUMBER_OF_EPOCHS
     lr = LEARNING_RATE
 
-    criterion = nn.CrossEntropyLoss()
-    # criterion = nn.NLLLoss()
+    #criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss()
 
     # Build model, initial weight and optimizer
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
@@ -326,15 +396,15 @@ def train_model(train_loader, val_loader):
 
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
 
-    model = EEGNet(in_channels=1, num_classes=16).to(device)
-    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+    #model = EEGNet(in_channels=1, num_classes=16).to(device)
+    model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
 
     print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0)
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)  # 12.5% test acc
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=10)  # 12.5% test acc
     # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -390,8 +460,8 @@ def test_model(test_loader):
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)  # RAW
     # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
-    model = EEGNet(in_channels=1, num_classes=16).to(device)
-    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+    #model = EEGNet(in_channels=1, num_classes=16).to(device)
+    model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -466,8 +536,8 @@ def run_algorithm():
                 mean = float(np.mean(accs))
                 std = float(np.std(accs))
                 print(f"Participant 0{participant_n} {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
-                results[f'mean_p{participant_n}_{speech_mode}'] = mean
-                results[f'std_p{participant_n}_{speech_mode}'] = std
+                results[f'mean_p{participant_n}_{speech_mode}_{data_type}'] = mean
+                results[f'std_p{participant_n}_{speech_mode}_{data_type}'] = std
 
         df = pd.DataFrame()
         for header, values in list(results.items()):
@@ -475,7 +545,7 @@ def run_algorithm():
                 values = [values]
             df[header] = values
 
-        savedir = f'classification_results/shallow_conv_net'
+        savedir = f'classification_results/shallow_conv_net_val'
 
         if not os.path.exists(savedir):
             os.makedirs(savedir)
