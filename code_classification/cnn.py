@@ -22,9 +22,9 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 40
+NUMBER_OF_EPOCHS = 10
 BATCH_SIZE = 64
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.001
 
 
 class ShallowConvNet(nn.Module):
@@ -120,72 +120,6 @@ class EEGNet(nn.Module):
         return x
 
 
-class EEGNet1D(nn.Module):
-    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
-
-    def __init__(self, in_channels, num_classes):
-        super(EEGNet1D, self).__init__()
-
-        # parameters
-        self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
-        self.kernel_length = 128  # kernel size for first convolution, half the sampling rate
-        self.eeg_channels = 14  # number of EEG channels
-        self.F1 = 8  # number of temporal filters
-        self.F2 = self.D * self.F1  # number of point wise filters to learn
-        self.dropout_rate = 0.5  # dropout rate
-
-        # first layer - temporal convolution
-        self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=self.F1, kernel_size=1,
-                               padding='same', bias=False)
-        self.batchnorm1 = nn.BatchNorm1d(self.F1)
-
-        # second layer - depthwise convolution
-        self.depth_conv1 = nn.Conv1d(in_channels=self.F1, out_channels=self.F2, kernel_size=self.eeg_channels,
-                                     groups=self.F1, bias=False)
-        self.batchnorm2 = nn.BatchNorm1d(self.F2)
-        self.pooling1 = nn.AvgPool1d(kernel_size=1)
-
-        # third layer - depthwise-separable convolution (depthwise convolution + pointwise convolution)
-        self.depth_conv2 = nn.Conv1d(in_channels=self.F2, out_channels=self.F2, kernel_size=1,
-                                     groups=self.F2, bias=False)
-        self.point_conv = nn.Conv1d(in_channels=self.F2, out_channels=self.F2, kernel_size=1, bias=False)  # pointwise convolution
-        self.separable_conv = torch.nn.Sequential(self.depth_conv2, self.point_conv)
-        self.batchnorm3 = nn.BatchNorm1d(self.F2)
-        self.pooling2 = nn.AvgPool1d(kernel_size=1)
-
-        # fully connected output
-        self.fc1 = nn.Linear(352, num_classes)
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        # Layer 1
-        x = self.conv1(x)
-        x = self.batchnorm1(x)
-        print(x.shape)
-        # Layer 2
-        x = self.depth_conv1(x)
-        x = self.batchnorm2(x)
-        x = F.elu(x)
-        x = self.pooling1(x)
-        x = F.dropout(x, self.dropout_rate)
-        print(x.shape)
-        # Layer 3
-        x = self.separable_conv(x)
-        x = self.batchnorm3(x)
-        x = F.elu(x)
-        print(x.shape)
-        x = self.pooling2(x)
-        print(x.shape)
-        x = F.dropout(x, self.dropout_rate)
-        # Layer 4
-        print(x.shape)
-        exit()
-        x = x.view(-1, x.shape[-1] * x.shape[-2])
-        x = self.fc1(x)
-        x = self.softmax(x)
-        return x
-
-
 class Conv2DClassifier(nn.Module):
     def __init__(self, channels_in, num_classes):
         super(Conv2DClassifier, self).__init__()
@@ -269,57 +203,97 @@ class ResClassifier(nn.Module):
         return x
 
 
-class Conv1DRawClassifier(nn.Module):
+class Conv2DMFCCClassifier(nn.Module):
+    """From https://ieeexplore.ieee.org/document/8832223"""
     def __init__(self, channels_in, num_classes):
-        super(Conv1DRawClassifier, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=12, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv1d(in_channels=12, out_channels=12, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv1d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
-        self.conv4 = nn.Conv1d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
+        super(Conv2DMFCCClassifier, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=20, kernel_size=(4, 4))
+        self.batchnorm1 = nn.BatchNorm2d(20)
 
-        self.fc1 = nn.Linear(168, num_classes)
+        self.conv2 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(8, 8))
+        self.batchnorm2 = nn.BatchNorm2d(10)
 
-        self.bn1 = nn.BatchNorm1d(12)
-        self.bn2 = nn.BatchNorm1d(24)
-
-        self.maxpool = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(120, 1024)
+        self.fc2 = nn.Linear(1024, 128)
+        self.fc3 = nn.Linear(128, num_classes)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        # print(x.shape)
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn1(self.conv2(x)))
-        x = self.maxpool(x)
-        x = F.relu(self.bn2(self.conv3(x)))
-        x = F.relu(self.bn2(self.conv4(x)))
-        x = x.view(-1, x.shape[-1] * x.shape[-2])
+        # Layer 1
+        x = self.conv1(x)
+        x = torch.tanh(x)
+        #x = self.batchnorm1(F.relu(x))
+        # Layer 2
+        x = self.conv2(x)
+        x = torch.tanh(x)
+        # x = self.batchnorm2(F.relu(x))
+        # Layer 3 flatten
+        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
+        # Layer 4
         x = self.fc1(x)
+        # Layer 5
+        x = self.fc2(x)
+        # Layer 6
+        x = self.fc3(x)
+        x = self.softmax(x)
         return x
 
 
 class Conv1DFeaturesClassifier(nn.Module):
+    """Based on this paper: https://iopscience.iop.org/article/10.1088/1741-2552/ac4430#jneac4430s2"""
     def __init__(self, channels_in, num_classes):
         super(Conv1DFeaturesClassifier, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=12, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv1d(in_channels=12, out_channels=12, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv1d(in_channels=12, out_channels=24, kernel_size=3, stride=1, padding=1)
-        self.conv4 = nn.Conv1d(in_channels=24, out_channels=24, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=32, kernel_size=20, padding='same')
+        self.batchnorm1 = nn.BatchNorm1d(32)
 
-        self.fc1 = nn.Linear(1176, num_classes)
+        self.conv2 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=20)
+        self.batchnorm2 = nn.BatchNorm1d(32)
+        self.drop = nn.Dropout(0.5)
 
-        self.bn1 = nn.BatchNorm1d(12)
-        self.bn2 = nn.BatchNorm1d(24)
+        self.conv3 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=6)
+        self.pool1 = nn.AvgPool1d(kernel_size=2, stride=2)
 
-        self.maxpool = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.conv4 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=6)
+
+        #self.fc1 = nn.Linear(1920, 256)  # time features
+        #self.fc1 = nn.Linear(1024, 256)  # freq features
+        self.fc1 = nn.Linear(2368, 256)  # mfccs
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64, 16)
+
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         # print(x.shape)
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn1(self.conv2(x)))
-        x = self.maxpool(x)
-        x = F.relu(self.bn2(self.conv3(x)))
-        x = F.relu(self.bn2(self.conv4(x)))
+        # Layer 1
+        x = F.relu(self.conv1(x))
+        x = self.batchnorm1(x)
+        # Layer 2
+        x = F.relu(self.conv2(x))
+        x = self.batchnorm2(x)
+        x = self.drop(x)
+        # Layer 3
+        x = F.relu(self.conv3(x))
+        # Layer 4
+        x = self.pool1(x)
+        # Layer 5
+        x = F.relu(self.conv4(x))
+        x = self.drop(x)
+        # Layer 6
         x = x.view(-1, x.shape[-1] * x.shape[-2])
-        x = self.fc1(x)
+        # Layer 7
+        x = F.relu(self.fc1(x))
+        x = self.drop(x)
+        # Layer 8
+        x = F.relu(self.fc2(x))
+        x = self.drop(x)
+        # Layer 9
+        x = F.relu(self.fc3(x))
+        x = self.drop(x)
+        # Layer 10
+        x = self.fc4(x)
+        x = self.softmax(x)
         return x
 
 
@@ -352,14 +326,14 @@ def prep_data(data, labels, two_d=False, data_type='raw'):
     data_var = torch.var(data, dim=0)
     data_norm = (data - data_mean) / torch.sqrt(data_var)
 
-    # for 2D clf
-    if two_d:
-        if data_type == 'raw':
-            y = y.reshape(320, -1, 16)[:, 0, :]
-            data_norm = data_norm.reshape(320, -1, 14)
-        elif data_type == 'preprocessed':
-            y = y.reshape(319, -1, 16)[:, 0, :]
-            data_norm = data_norm.reshape(319, -1, 14)
+    if data_type == 'raw':
+        y = y.reshape(320, -1, 16)[:, 0, :]
+        data_norm = data_norm.reshape(320, -1, 14)
+    elif data_type == 'preprocessed':
+        y = y.reshape(319, -1, 16)[:, 0, :]
+        data_norm = data_norm.reshape(319, -1, 14)
+    elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
+        data_norm = data_norm.reshape(1595, -1, 14)
 
     return data_norm, y
 
@@ -387,24 +361,25 @@ def train_model(train_loader, val_loader):
     n_epochs = NUMBER_OF_EPOCHS
     lr = LEARNING_RATE
 
-    #criterion = nn.CrossEntropyLoss()
-    criterion = nn.NLLLoss()
+    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.NLLLoss()
 
     # Build model, initial weight and optimizer
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
-    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
+    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
+    model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
 
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
 
-    #model = EEGNet(in_channels=1, num_classes=16).to(device)
-    model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+    # model = EEGNet(in_channels=1, num_classes=16).to(device)
+    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
 
     print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=10)  # 12.5% test acc
+    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=10)  # 12.5% test acc
     # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -458,10 +433,11 @@ def train_model(train_loader, val_loader):
 def test_model(test_loader):
     """Returns test accuracy"""
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)  # RAW
-    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
+    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
+    model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
-    #model = EEGNet(in_channels=1, num_classes=16).to(device)
-    model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+    # model = EEGNet(in_channels=1, num_classes=16).to(device)
+    #model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -484,23 +460,27 @@ def run_algorithm():
 
     for participant_n in participants:
         results = {}
-        print(f"------\nParticipant number {participant_n}\n------")
-        data_types = ['raw', 'preprocessed']
+        #print(f"------\nParticipant number {participant_n}\n------")
+        data_types = [
+            #'raw',
+            #'preprocessed',
+            #'time_features',
+            #'frequency_features',
+            'mfccs'
+        ]
         for data_type in data_types:
-            print(f"----Data type: {data_type}----")
+            #print(f"Participant number {participant_n} -- Data type: {data_type}")
             speech_modes = ['imagined', 'inner']
             for speech_mode in speech_modes:
-                print(f"-->\nSpeech mode: {speech_mode}\n")
-                # FEATURES
-                # data = np.load('features/even_windows/participant_01/imagined/features.npy')
-                # labels = np.load('features/even_windows/participant_01/imagined/labels.npy')
-
+                print(f"Participant number {participant_n} --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
                 # RAW
                 if data_type == 'raw':
                     filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
                     df = pd.read_csv(filepath)
                     labels = df['Label']
                     data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+                    data = data.values
+                    two_d = True
 
                 # PREPROCESSED
                 elif data_type == 'preprocessed':
@@ -508,10 +488,29 @@ def run_algorithm():
                     df = pd.read_csv(filepath)
                     labels = df['Label']
                     data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+                    data = data.values
+                    two_d = True
 
-                data = data.values
+                # TIME DOMAIN FEATURES
+                elif data_type == 'time_features':
+                    data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_features.npy')
+                    labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_labels.npy')
+                    two_d = False
+
+                # FREQUENCY DOMAIN FEATURES
+                elif data_type == 'frequency_features':
+                    data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/features.npy')
+                    labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/labels.npy')
+                    two_d = False
+
+                # MFCCS
+                elif data_type == 'mfccs':
+                    data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_features.npy')
+                    labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_labels.npy')
+                    two_d = False
+
                 # train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
-                data, labels = prep_data(data, labels, two_d=True, data_type=data_type)
+                data, labels = prep_data(data, labels, two_d=two_d, data_type=data_type)
                 dataset = SpeechDataset(data, labels)
 
                 folds = 5

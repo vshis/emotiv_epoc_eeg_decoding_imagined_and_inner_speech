@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader, Dataset
 import os
 from pathlib import Path
 import wandb
+from cnn import Conv2DMFCCClassifier
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -154,13 +155,15 @@ def prep_data(data, labels, two_d=False, data_type='raw'):
     return data_norm, y
 
 
-def build_dataset(batch_size, two_d=False, data_type='raw'):
+def build_dataset(batch_size, data_type='raw'):
     """Encodes labels, normalises data. Returns data loaders. Splits into 90/10 train/test. Returns loaders."""
-    filepath = f'../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv'
-    df = pd.read_csv(filepath)
-    labels = df['Label']
-    data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
-    data = data.values
+    #filepath = f'../raw_eeg_recordings_labelled/participant_01/imagined/thinking_labelled.csv'
+    #df = pd.read_csv(filepath)
+    #labels = df['Label']
+    #data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+    #data = data.values
+    data = np.load(f'features/even_windows/participant_01/imagined/mfcc_features.npy')
+    labels = np.load(f'features/even_windows/participant_01/imagined/mfcc_labels.npy')
 
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
@@ -172,14 +175,14 @@ def build_dataset(batch_size, two_d=False, data_type='raw'):
     data_var = torch.var(data, dim=0)
     data_norm = (data - data_mean) / torch.sqrt(data_var)
 
-    # for 2D clf
-    if two_d:
-        if data_type == 'raw':
-            y = y.reshape(320, -1, 16)[:, 0, :]
-            data_norm = data_norm.reshape(320, -1, 14)
-        elif data_type == 'preprocessed':
-            y = y.reshape(319, -1, 16)[:, 0, :]
-            data_norm = data_norm.reshape(319, -1, 14)
+    if data_type == 'raw':
+        y = y.reshape(320, -1, 16)[:, 0, :]
+        data_norm = data_norm.reshape(320, -1, 14)
+    elif data_type == 'preprocessed':
+        y = y.reshape(319, -1, 16)[:, 0, :]
+        data_norm = data_norm.reshape(319, -1, 14)
+    elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
+        data_norm = data_norm.reshape(1595, -1, 14)
     # split into 80/10 train/val
     input_train, input_test, target_train, target_test = train_test_split(data_norm, y, test_size=0.1)
 
@@ -246,24 +249,25 @@ def train_epoch(model, train_loader, val_loader, optimizer, criterion):
 
     val_accuracy = (100 * running_accuracy / total)
 
-    return val_loss_value
+    return val_accuracy
 
 
 def train(config=None):
     with wandb.init(config=config):
         config = wandb.config
 
-        train_loader, test_loader = build_dataset(config.batch_size, two_d=True, data_type='raw')
+        train_loader, test_loader = build_dataset(config.batch_size, data_type='mfccs')
         #model = EEGNet(in_channels=1, num_classes=16).to(device)
-        model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+        #model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+        model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
         optimizer = build_optimizer(model, config.optimizer, config.learning_rate, config.weight_decay)
         criterion = build_criterion(config.criterion)
 
         for epoch in range(config.epochs):
-            avg_loss = train_epoch(model, train_loader, test_loader, optimizer, criterion)
-            #val_accuracy = train_epoch(model, train_loader, test_loader, optimizer, criterion)
-            wandb.log({'validation_loss': avg_loss, 'epoch': epoch})
-            #wandb.log({'val_accuracy': val_accuracy, 'epoch': epoch})
+            #avg_loss = train_epoch(model, train_loader, test_loader, optimizer, criterion)
+            metric_output = train_epoch(model, train_loader, test_loader, optimizer, criterion)
+            #wandb.log({'validation_loss': avg_loss, 'epoch': epoch})
+            wandb.log({'val_accuracy': metric_output, 'epoch': epoch})
 
 
 def run_algorithm():
@@ -342,8 +346,8 @@ def run_algorithm():
 if __name__ == '__main__':
     wandb.login()
     sweep_config = {'method': 'bayes'}
-    metric = {'name': 'validation_loss', 'goal': 'minimize'}
-    #metric = {'name': 'val_accuracy', 'goal': 'maximize'}
+    #metric = {'name': 'validation_loss', 'goal': 'minimize'}
+    metric = {'name': 'val_accuracy', 'goal': 'maximize'}
     sweep_config['metric'] = metric
 
     parameters_dict = {
@@ -354,7 +358,13 @@ if __name__ == '__main__':
             'values': [0.1, 0.01, 0.001, 0.0001, 0.00001]
         },
         'batch_size': {
-            'values': [2, 4, 8, 16, 32, 64, 128]
+            'values': [#2,
+                       #4,
+                       #8,
+                       16,
+                       32,
+                       64,
+                       128]
         },
         'epochs': {
             'values': [10, 20, 30, 40, 50]
