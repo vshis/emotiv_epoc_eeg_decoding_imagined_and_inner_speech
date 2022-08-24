@@ -68,7 +68,7 @@ class SpeechDataset(Dataset):
 
 def load_data():
     d_set = 'p14'
-    d_type = 'time_features'
+    d_type = 'mfccs'
 
     if d_set == 'p14':
         participant = np.random.randint(1, 5)
@@ -89,7 +89,30 @@ def load_data():
             data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/linear_features.npy')
             labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/linear_labels.npy')
         elif d_type == 'frequency_features':
-            data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/features')
+            data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/features.npy')
+            labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/labels.npy')
+        elif d_type == 'mfccs':
+            data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/mfcc_features.npy')
+            labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/mfcc_labels.npy')
+
+    if d_set == 'feis':
+        if d_type == 'raw':
+            filepath = f'feis_data/feis-01-thinking.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+            data = data.values
+        elif d_type == 'preprocessed':
+            filepath = f'../data_preprocessed/participant_0{participant}/{speech_type}/preprocessed.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+            data = data.values
+        elif d_type == 'time_features':
+            data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/linear_features.npy')
+            labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/linear_labels.npy')
+        elif d_type == 'frequency_features':
+            data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/features.npy')
             labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/labels.npy')
         elif d_type == 'mfccs':
             data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/mfcc_features.npy')
