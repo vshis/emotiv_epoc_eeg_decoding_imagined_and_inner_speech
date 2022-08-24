@@ -22,9 +22,13 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 10
-BATCH_SIZE = 64
-LEARNING_RATE = 0.001
+NUMBER_OF_EPOCHS = 40
+BATCH_SIZE = 32
+LEARNING_RATE = 0.0001
+DROPOUT_RATE = 0.0
+WEIGHT_DECAY = 10
+#CRITERION = nn.CrossEntropyLoss()
+CRITERION = nn.NLLLoss()
 
 
 class ShallowConvNet(nn.Module):
@@ -62,19 +66,55 @@ class ShallowConvNet(nn.Module):
 class EEGNet(nn.Module):
     """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
 
-    def __init__(self, in_channels, num_classes):
+    def __init__(self, in_channels, num_classes, data_type='raw', dataset_type='p14', dropout_rate=0.5):
         super(EEGNet, self).__init__()
 
         # parameters
-        self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
-        self.kernel_length = 128  # kernel size for first convolution, half the sampling rate
-        self.eeg_channels = 14  # number of EEG channels
-        self.F1 = 8  # number of temporal filters
+        if data_type == 'raw' or data_type == 'preprocessed':
+            self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
+            self.conv1_kernel_size = (128, 1)  # kernel size for first convolution, half the sampling rate
+            self.F1 = 8  # number of temporal filters
+            self.fc_size = 352  # size of the first fully connected layer
+            self.pool1_size = (4, 1)
+            self.pool2_size = (8, 1)
+            self.depth_conv2_kernel_size = (16, 1)
+        elif data_type == 'time_features' or data_type == 'mfccs':
+            self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
+            self.conv1_kernel_size = (3, 1)  # kernel size for first convolution, half the sampling rate
+            self.F1 = 8  # number of temporal filters
+            self.fc_size = 16  # size of the first fully connected layer
+            self.pool1_size = (2, 1)
+            self.pool2_size = (4, 1)
+            self.depth_conv2_kernel_size = (2, 1)
+        elif data_type == 'frequency_features':
+            self.D = 2  # depth multiplier for depth wise convolution - number of spatial filters to learn
+            self.conv1_kernel_size = (3, 1)  # kernel size for first convolution, half the sampling rate
+            self.F1 = 8  # number of temporal filters
+            self.fc_size = 16  # size of the first fully connected layer
+            self.pool1_size = (2, 1)
+            self.pool2_size = (2, 1)
+            self.depth_conv2_kernel_size = (2, 1)
+
+        if dataset_type == 'p00':
+            self.conv1_kernel_size = 64
+            self.fc_size = 160
+        elif dataset_type == 'binary':
+            if data_type == 'raw' or data_type == 'preprocessed':
+                self.fc_size = 352
+            else:
+                self.fc_size = 16
+        elif dataset_type == 'feis':
+            if data_type == 'raw' or data_type == 'preprocessed':
+                self.fc_size = 608
+            else:
+                self.fc_size = 16
+
         self.F2 = self.D * self.F1  # number of point wise filters to learn
-        self.dropout_rate = 0.5  # dropout rate
+        self.dropout_rate = dropout_rate  # dropout rate
+        self.eeg_channels = 14  # number of EEG channels
 
         # first layer - temporal convolution
-        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=self.F1, kernel_size=(self.kernel_length, 1),
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=self.F1, kernel_size=self.conv1_kernel_size,
                                padding='same', bias=False)
         self.batchnorm1 = nn.BatchNorm2d(self.F1)
 
@@ -82,19 +122,19 @@ class EEGNet(nn.Module):
         self.depth_conv1 = nn.Conv2d(in_channels=self.F1, out_channels=self.F2, kernel_size=(1, self.eeg_channels),
                                      groups=self.F1, bias=False)
         self.batchnorm2 = nn.BatchNorm2d(self.F2)
-        self.pooling1 = nn.AvgPool2d(kernel_size=(4, 1))
+        self.pooling1 = nn.AvgPool2d(kernel_size=self.pool1_size)
 
         # third layer - depthwise-separable convolution (depthwise convolution + pointwise convolution)
-        self.depth_conv2 = nn.Conv2d(in_channels=self.F2, out_channels=self.F2, kernel_size=(16, 1),
+        self.depth_conv2 = nn.Conv2d(in_channels=self.F2, out_channels=self.F2, kernel_size=self.depth_conv2_kernel_size,
                                      groups=self.F2, bias=False)
         # pointwise convolution
         self.point_conv = nn.Conv2d(in_channels=self.F2, out_channels=self.F2, kernel_size=1, bias=False)
         self.separable_conv = torch.nn.Sequential(self.depth_conv2, self.point_conv)
         self.batchnorm3 = nn.BatchNorm2d(self.F2)
-        self.pooling2 = nn.AvgPool2d(kernel_size=(8, 1))
+        self.pooling2 = nn.AvgPool2d(kernel_size=self.pool2_size)
 
         # fully connected output
-        self.fc1 = nn.Linear(352, num_classes)
+        self.fc1 = nn.Linear(self.fc_size, num_classes)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
@@ -205,6 +245,7 @@ class ResClassifier(nn.Module):
 
 class Conv2DMFCCClassifier(nn.Module):
     """From https://ieeexplore.ieee.org/document/8832223"""
+
     def __init__(self, channels_in, num_classes):
         super(Conv2DMFCCClassifier, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=20, kernel_size=(4, 4))
@@ -222,7 +263,7 @@ class Conv2DMFCCClassifier(nn.Module):
         # Layer 1
         x = self.conv1(x)
         x = torch.tanh(x)
-        #x = self.batchnorm1(F.relu(x))
+        # x = self.batchnorm1(F.relu(x))
         # Layer 2
         x = self.conv2(x)
         x = torch.tanh(x)
@@ -241,6 +282,7 @@ class Conv2DMFCCClassifier(nn.Module):
 
 class Conv1DFeaturesClassifier(nn.Module):
     """Based on this paper: https://iopscience.iop.org/article/10.1088/1741-2552/ac4430#jneac4430s2"""
+
     def __init__(self, channels_in, num_classes):
         super(Conv1DFeaturesClassifier, self).__init__()
         self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=32, kernel_size=20, padding='same')
@@ -255,8 +297,8 @@ class Conv1DFeaturesClassifier(nn.Module):
 
         self.conv4 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=6)
 
-        #self.fc1 = nn.Linear(1920, 256)  # time features
-        #self.fc1 = nn.Linear(1024, 256)  # freq features
+        # self.fc1 = nn.Linear(1920, 256)  # time features
+        # self.fc1 = nn.Linear(1024, 256)  # freq features
         self.fc1 = nn.Linear(2368, 256)  # mfccs
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 64)
@@ -314,7 +356,7 @@ class SpeechDataset(Dataset):
         return out_x.unsqueeze(0), torch.max(out_y, 0)[1]
 
 
-def prep_data(data, labels, two_d=False, data_type='raw'):
+def prep_data(data, labels, data_type='raw', dataset_type='p14'):
     """Encodes labels, normalises data. Returns data loaders."""
     encoder = LabelBinarizer()
     y = encoder.fit_transform(labels)
@@ -326,60 +368,66 @@ def prep_data(data, labels, two_d=False, data_type='raw'):
     data_var = torch.var(data, dim=0)
     data_norm = (data - data_mean) / torch.sqrt(data_var)
 
-    if data_type == 'raw':
-        y = y.reshape(320, -1, 16)[:, 0, :]
-        data_norm = data_norm.reshape(320, -1, 14)
-    elif data_type == 'preprocessed':
-        y = y.reshape(319, -1, 16)[:, 0, :]
-        data_norm = data_norm.reshape(319, -1, 14)
-    elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
-        data_norm = data_norm.reshape(1595, -1, 14)
+    if dataset_type == 'p14' or dataset_type == 'p00':
+        if data_type == 'raw':
+            y = y.reshape(320, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(320, -1, 14)
+        elif data_type == 'preprocessed':
+            y = y.reshape(319, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(319, -1, 14)
+        elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
+            data_norm = data_norm.reshape(1595, -1, 14)
+    elif dataset_type == 'binary':
+        if data_type == 'raw':
+            y = y.reshape(40, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(40, -1, 14)
+        elif data_type == 'preprocessed':
+            y = y[0:30720, :]
+            data_norm = data_norm[0:30720, :]
+            y = y.reshape(40, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(40, -1, 14)
+        elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
+            data_norm = data_norm.reshape(200, -1, 14)
+    elif dataset_type == 'feis':
+        if data_type == 'raw':
+            y = y.reshape(160, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(160, -1, 14)
+        elif data_type == 'preprocessed':
+            y = y.reshape(159, -1, 16)[:, 0, :]
+            data_norm = data_norm.reshape(159, -1, 14)
+        elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
+            data_norm = data_norm.reshape(795, -1, 14)
 
     return data_norm, y
 
-    # split into 80/10/10 train/val/test
-    input_train, x_rem, target_train, y_rem = train_test_split(data_norm, y, test_size=0.2, random_state=42)
-    input_val, input_test, target_val, target_test = train_test_split(x_rem, y_rem, test_size=0.5, random_state=42)
 
-    print(f"input_train: {input_train.shape}, input_val: {input_val.shape}, input_test: {input_test.shape}\n"
-          f"target_train: {target_train.shape}, target_val: {target_val.shape}, target_test: {target_test.shape}")
-    batch_size = BATCH_SIZE
-
-    train = SpeechDataset(input_train, target_train)
-    val = SpeechDataset(input_val, target_val)
-    test = SpeechDataset(input_test, target_test)
-
-    train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test, batch_size=batch_size, shuffle=False)
-
-    return train_loader, val_loader, test_loader
-
-
-def train_model(train_loader, val_loader):
+def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=16):
     # Hyperparameters
     n_epochs = NUMBER_OF_EPOCHS
     lr = LEARNING_RATE
 
-    criterion = nn.CrossEntropyLoss()
-    #criterion = nn.NLLLoss()
+    criterion = CRITERION
 
     # Build model, initial weight and optimizer
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
-    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
-    model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
+    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
+    # model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
 
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
 
-    # model = EEGNet(in_channels=1, num_classes=16).to(device)
+    model = EEGNet(in_channels=1,
+                   num_classes=num_classes,
+                   data_type=data_type,
+                   dropout_rate=DROPOUT_RATE,
+                   dataset_type=dataset_type).to(device)
     # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
 
-    print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    #print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.1)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=10)  # 12.5% test acc
+    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
     # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -425,19 +473,23 @@ def train_model(train_loader, val_loader):
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), 'model.pt')
             best_accuracy = accuracy
-        if (epoch + 1) % 10 == 0:
-            print(
-                f"Epoch {epoch + 1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
+        #if (epoch + 1) % 10 == 0:
+        #    print(
+        #        f"Epoch {epoch + 1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
-def test_model(test_loader):
+def test_model(test_loader, data_type, dataset_type, num_classes=16):
     """Returns test accuracy"""
     # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)  # RAW
-    #model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
-    model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
+    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
+    # model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
     # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
-    # model = EEGNet(in_channels=1, num_classes=16).to(device)
-    #model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
+    model = EEGNet(in_channels=1,
+                   num_classes=num_classes,
+                   data_type=data_type,
+                   dropout_rate=0,
+                   dataset_type=dataset_type).to(device)
+    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -455,24 +507,29 @@ def test_model(test_loader):
     return test_accuracy
 
 
-def run_algorithm():
+def run_algorithm_for_p1to4():
     participants = [i for i in range(1, 5)]
+    dataset_type = 'p14'
 
+    results = {}
     for participant_n in participants:
-        results = {}
-        #print(f"------\nParticipant number {participant_n}\n------")
+
+        # print(f"------\nParticipant number {participant_n}\n------")
         data_types = [
             #'raw',
-            #'preprocessed',
+            'preprocessed',
             #'time_features',
             #'frequency_features',
-            'mfccs'
+            #'mfccs'
         ]
         for data_type in data_types:
-            #print(f"Participant number {participant_n} -- Data type: {data_type}")
-            speech_modes = ['imagined', 'inner']
+            # print(f"Participant number {participant_n} -- Data type: {data_type}")
+            speech_modes = [
+                'imagined',
+                'inner'
+            ]
             for speech_mode in speech_modes:
-                print(f"Participant number {participant_n} --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
+                print(f"\nRUNNING: Participant number {participant_n} --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
                 # RAW
                 if data_type == 'raw':
                     filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
@@ -480,7 +537,6 @@ def run_algorithm():
                     labels = df['Label']
                     data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
                     data = data.values
-                    two_d = True
 
                 # PREPROCESSED
                 elif data_type == 'preprocessed':
@@ -489,28 +545,28 @@ def run_algorithm():
                     labels = df['Label']
                     data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
                     data = data.values
-                    two_d = True
 
                 # TIME DOMAIN FEATURES
                 elif data_type == 'time_features':
-                    data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_features.npy')
-                    labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_labels.npy')
-                    two_d = False
+                    data = np.load(
+                        f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_features.npy')
+                    labels = np.load(
+                        f'features/even_windows/participant_0{participant_n}/{speech_mode}/linear_labels.npy')
 
                 # FREQUENCY DOMAIN FEATURES
                 elif data_type == 'frequency_features':
                     data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/features.npy')
                     labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/labels.npy')
-                    two_d = False
 
                 # MFCCS
                 elif data_type == 'mfccs':
-                    data = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_features.npy')
-                    labels = np.load(f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_labels.npy')
-                    two_d = False
+                    data = np.load(
+                        f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_features.npy')
+                    labels = np.load(
+                        f'features/even_windows/participant_0{participant_n}/{speech_mode}/mfcc_labels.npy')
 
                 # train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
-                data, labels = prep_data(data, labels, two_d=two_d, data_type=data_type)
+                data, labels = prep_data(data, labels, data_type=data_type, dataset_type=dataset_type)
                 dataset = SpeechDataset(data, labels)
 
                 folds = 5
@@ -528,28 +584,266 @@ def run_algorithm():
                     val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_subsampler)
                     test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
-                    train_model(train_loader, val_loader)
-                    test_acc = test_model(test_loader)
+                    train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
+                    test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
                     accs.append(test_acc)
 
                 mean = float(np.mean(accs))
                 std = float(np.std(accs))
-                print(f"Participant 0{participant_n} {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
+                print(f"RESULTS :::::::::::: Participant 0{participant_n}, {data_type} data, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
                 results[f'mean_p{participant_n}_{speech_mode}_{data_type}'] = mean
                 results[f'std_p{participant_n}_{speech_mode}_{data_type}'] = std
 
-        df = pd.DataFrame()
-        for header, values in list(results.items()):
-            if type(values) is float:
-                values = [values]
-            df[header] = values
+    df = pd.DataFrame()
+    for header, values in list(results.items()):
+        if type(values) is float:
+            values = [values]
+        df[header] = values
 
-        savedir = f'classification_results/shallow_conv_net_val'
+    savedir = f'classification_results/eegnet'
 
-        if not os.path.exists(savedir):
-            os.makedirs(savedir)
-        df.to_csv(Path(f'{savedir}/p0{participant_n}_results.csv'), index=False)
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    df.to_csv(Path(f'{savedir}/{data_type}_results.csv'), index=False)
+
+
+def run_algorithm_for_p00():
+    results = {}
+    dataset_type = 'p00'
+    # print(f"------\nParticipant number {participant_n}\n------")
+    data_type = 'raw'
+    # print(f"Participant number {participant_n} -- Data type: {data_type}")
+    speech_modes = [
+        'imagined',
+        'inner'
+    ]
+    for speech_mode in speech_modes:
+        print(f"Participant number 00 --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
+        # RAW
+        filepath = f'../data_preprocessed/participant_00/{speech_mode}/preprocessed.csv'
+        df = pd.read_csv(filepath)
+        labels = df['Label']
+        data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+        data = data.values
+
+        # train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
+        data, labels = prep_data(data, labels, data_type=data_type, dataset_type=dataset_type)
+        dataset = SpeechDataset(data, labels)
+
+        folds = 5
+        kfold = KFold(n_splits=folds, shuffle=True)
+        accs = []
+        for fold_n, (train_ids, val_test_ids) in enumerate(kfold.split(dataset)):
+            print(f"--------------------------\nFold {fold_n + 1}/{folds}\n--------------------------")
+            val_ids, test_ids = train_test_split(val_test_ids, test_size=0.5)
+
+            train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+            val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
+            test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
+
+            train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_subsampler)
+            val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_subsampler)
+            test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
+
+            train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
+            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            accs.append(test_acc)
+
+        mean = float(np.mean(accs))
+        std = float(np.std(accs))
+        print(f"Participant 00, data {data_type}, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
+        results[f'mean_{speech_mode}_{data_type}'] = mean
+        results[f'std_{speech_mode}_{data_type}'] = std
+
+    exit()
+    df = pd.DataFrame()
+    for header, values in list(results.items()):
+        if type(values) is float:
+            values = [values]
+        df[header] = values
+
+    savedir = f'classification_results/eegnet'
+
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    df.to_csv(Path(f'{savedir}/p00_results.csv'), index=False)
+
+
+def run_algorithm_for_binary():
+    results = {}
+    dataset_type = 'binary'
+    # print(f"------\nParticipant number {participant_n}\n------")
+    data_types = [
+        'raw',
+        'preprocessed',
+        'time_features',
+        'frequency_features',
+        'mfccs'
+    ]
+    for data_type in data_types:
+        print(f"\nBinary --> Data type: {data_type}\n")
+        # RAW
+        if data_type == 'raw':
+            filepath = f'binary_data/p01_imagined_raw_binary.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+            data = data.values
+
+        # PREPROCESSED
+        elif data_type == 'preprocessed':
+            filepath = f'binary_data/p01_imagined_preprocessed_binary.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+            data = data.values
+
+        # TIME DOMAIN FEATURES
+        elif data_type == 'time_features':
+            data = np.load(f'features/even_windows/binary/linear_features.npy')
+            labels = np.load(f'features/even_windows/binary/linear_labels.npy')
+
+        # FREQUENCY DOMAIN FEATURES
+        elif data_type == 'frequency_features':
+            data = np.load(f'features/even_windows/binary/features.npy')
+            labels = np.load(f'features/even_windows/binary/labels.npy')
+
+        # MFCCS
+        elif data_type == 'mfccs':
+            data = np.load(f'features/even_windows/binary/mfcc_features.npy')
+            labels = np.load(f'features/even_windows/binary/mfcc_labels.npy')
+
+        # train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
+        data, labels = prep_data(data, labels, data_type=data_type, dataset_type=dataset_type)
+        dataset = SpeechDataset(data, labels)
+
+        folds = 5
+        kfold = KFold(n_splits=folds, shuffle=True)
+        accs = []
+        for fold_n, (train_ids, val_test_ids) in enumerate(kfold.split(dataset)):
+            print(f"--------------------------\nFold {fold_n + 1}/{folds}\n--------------------------")
+            val_ids, test_ids = train_test_split(val_test_ids, test_size=0.5)
+
+            train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+            val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
+            test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
+
+            train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_subsampler)
+            val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_subsampler)
+            test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
+
+            train_model(train_loader, val_loader, data_type, dataset_type=dataset_type, num_classes=2)
+            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type, num_classes=2)
+            accs.append(test_acc)
+
+        mean = float(np.mean(accs))
+        std = float(np.std(accs))
+        print(f"Binary, {data_type} data, mean (std) accuracy = {mean:.2f} ({std:.2f})")
+        results[f'mean_{data_type}'] = mean
+        results[f'std_{data_type}'] = std
+
+    df = pd.DataFrame()
+    for header, values in list(results.items()):
+        if type(values) is float:
+            values = [values]
+        df[header] = values
+
+    savedir = f'classification_results/eegnet'
+
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    df.to_csv(Path(f'{savedir}/binary_results.csv'), index=False)
+
+
+def run_algorithm_for_feis():
+    results = {}
+    dataset_type = 'feis'
+    # print(f"------\nParticipant number {participant_n}\n------")
+    data_types = [
+        #'raw',
+        #'preprocessed',
+        'time_features',
+        'frequency_features',
+        'mfccs'
+    ]
+    for data_type in data_types:
+        print(f"FEIS --> Data type: {data_type}\n")
+        # RAW
+        if data_type == 'raw':
+            filepath = f'feis_data/feis-01-thinking.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)  # RAW
+            data = data.values
+
+        # PREPROCESSED
+        elif data_type == 'preprocessed':
+            filepath = f'feis_data/preprocessed.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+            data = data.values
+
+        # TIME DOMAIN FEATURES
+        elif data_type == 'time_features':
+            data = np.load(f'features/even_windows/feis/linear_features.npy')
+            labels = np.load(f'features/even_windows/feis/linear_labels.npy')
+
+        # FREQUENCY DOMAIN FEATURES
+        elif data_type == 'frequency_features':
+            data = np.load(f'features/even_windows/feis/features.npy')
+            labels = np.load(f'features/even_windows/feis/labels.npy')
+
+        # MFCCS
+        elif data_type == 'mfccs':
+            data = np.load(f'features/even_windows/feis/mfcc_features.npy')
+            labels = np.load(f'features/even_windows/feis/mfcc_labels.npy')
+
+        # train_loader, val_loader, test_loader = prep_data(data, labels, two_d=True)
+        data, labels = prep_data(data, labels, data_type=data_type, dataset_type=dataset_type)
+        dataset = SpeechDataset(data, labels)
+
+        folds = 5
+        kfold = KFold(n_splits=folds, shuffle=True)
+        accs = []
+        for fold_n, (train_ids, val_test_ids) in enumerate(kfold.split(dataset)):
+            print(f"--------------------------\nFold {fold_n + 1}/{folds}\n--------------------------")
+            val_ids, test_ids = train_test_split(val_test_ids, test_size=0.5)
+
+            train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+            val_subsampler = torch.utils.data.SubsetRandomSampler(val_ids)
+            test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
+
+            train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_subsampler)
+            val_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=val_subsampler)
+            test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
+
+            train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
+            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            accs.append(test_acc)
+
+        mean = float(np.mean(accs))
+        std = float(np.std(accs))
+        print(f"FEIS, {data_type} data, mean (std) accuracy = {mean:.2f} ({std:.2f})")
+        results[f'mean_{data_type}'] = mean
+        results[f'std_{data_type}'] = std
+
+    df = pd.DataFrame()
+    for header, values in list(results.items()):
+        if type(values) is float:
+            values = [values]
+        df[header] = values
+
+    savedir = f'classification_results/eegnet'
+
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+    df.to_csv(Path(f'{savedir}/feis_results.csv'), index=False)
 
 
 if __name__ == '__main__':
-    run_algorithm()
+    run_algorithm_for_p1to4()
+    #run_algorithm_for_p00()
+    #run_algorithm_for_binary()
+    #run_algorithm_for_feis()
+    exit()
