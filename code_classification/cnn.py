@@ -23,10 +23,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
 NUMBER_OF_EPOCHS = 10
-BATCH_SIZE = 128
-LEARNING_RATE = 0.001
-DROPOUT_RATE = 0.0
-WEIGHT_DECAY = 0.0
+BATCH_SIZE = 64
+LEARNING_RATE = 0.0001
+DROPOUT_RATE = 0
+WEIGHT_DECAY = 1
 #CRITERION = nn.CrossEntropyLoss()
 CRITERION = nn.NLLLoss()
 
@@ -674,8 +674,8 @@ def run_algorithm_for_binary():
     dataset_type = 'binary'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        #'raw',
-        'preprocessed',
+        'raw',
+        #'preprocessed',
         #'time_features',
         #'frequency_features',
         #'mfccs'
@@ -760,11 +760,11 @@ def run_algorithm_for_feis():
     dataset_type = 'feis'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        'raw',
+        #'raw',
         #'preprocessed',
         #'time_features',
         #'frequency_features',
-        #'mfccs'
+        'mfccs'
     ]
     for data_type in data_types:
         print(f"FEIS --> Data type: {data_type}\n")
@@ -844,6 +844,6 @@ def run_algorithm_for_feis():
 if __name__ == '__main__':
     #run_algorithm_for_p1to4()
     #run_algorithm_for_p00()
-    #run_algorithm_for_binary()
-    run_algorithm_for_feis()
+    run_algorithm_for_binary()
+    #run_algorithm_for_feis()
     exit()
