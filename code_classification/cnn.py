@@ -22,13 +22,15 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 10
-BATCH_SIZE = 64
-LEARNING_RATE = 0.0001
-DROPOUT_RATE = 0
-WEIGHT_DECAY = 1
+BATCH_SIZE = 32
 #CRITERION = nn.CrossEntropyLoss()
 CRITERION = nn.NLLLoss()
+DROPOUT_RATE = 0.75
+NUMBER_OF_EPOCHS = 30
+LEARNING_RATE = 0.1
+#OPTIMIZER = 'ADAM'
+OPTIMIZER = 'SGD'
+WEIGHT_DECAY = 0.0
 
 
 class ShallowConvNet(nn.Module):
@@ -424,14 +426,10 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
 
     #print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
-    # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
-    # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
-    # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
-    # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    if OPTIMIZER == 'ADAM':
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
+    elif OPTIMIZER == 'SGD':
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
 
     best_accuracy = 0.0
 
@@ -465,8 +463,6 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
                 running_accuracy += (predicted == y).sum().item()
 
         val_loss_value = running_val_loss / len(val_loader)
-
-        # scheduler.step(val_loss_value)
 
         accuracy = (100 * running_accuracy / total)
 
@@ -674,11 +670,11 @@ def run_algorithm_for_binary():
     dataset_type = 'binary'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        'raw',
+        #'raw',
         #'preprocessed',
         #'time_features',
         #'frequency_features',
-        #'mfccs'
+        'mfccs'
     ]
     for data_type in data_types:
         print(f"\nBinary --> Data type: {data_type}\n")
@@ -843,7 +839,7 @@ def run_algorithm_for_feis():
 
 if __name__ == '__main__':
     #run_algorithm_for_p1to4()
-    #run_algorithm_for_p00()
-    run_algorithm_for_binary()
+    run_algorithm_for_p00()
+    #run_algorithm_for_binary()
     #run_algorithm_for_feis()
     exit()
