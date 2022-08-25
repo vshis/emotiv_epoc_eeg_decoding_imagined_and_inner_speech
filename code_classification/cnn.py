@@ -22,13 +22,13 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-NUMBER_OF_EPOCHS = 50
-BATCH_SIZE = 64
+NUMBER_OF_EPOCHS = 10
+BATCH_SIZE = 128
 LEARNING_RATE = 0.001
-DROPOUT_RATE = 0.25
+DROPOUT_RATE = 0.0
 WEIGHT_DECAY = 0.0
-CRITERION = nn.CrossEntropyLoss()
-#CRITERION = nn.NLLLoss()
+#CRITERION = nn.CrossEntropyLoss()
+CRITERION = nn.NLLLoss()
 
 
 class ShallowConvNet(nn.Module):
@@ -379,12 +379,12 @@ def prep_data(data, labels, data_type='raw', dataset_type='p14'):
             data_norm = data_norm.reshape(1595, -1, 14)
     elif dataset_type == 'binary':
         if data_type == 'raw':
-            y = y.reshape(40, -1, 16)[:, 0, :]
+            y = y.reshape(40, -1, 2)[:, 0, :]
             data_norm = data_norm.reshape(40, -1, 14)
         elif data_type == 'preprocessed':
             y = y[0:30720, :]
             data_norm = data_norm[0:30720, :]
-            y = y.reshape(40, -1, 16)[:, 0, :]
+            y = y.reshape(40, -1, 2)[:, 0, :]
             data_norm = data_norm.reshape(40, -1, 14)
         elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
             data_norm = data_norm.reshape(200, -1, 14)
@@ -424,10 +424,10 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
 
     #print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=lr, weight_decay=0.1)  # 6.25% test acc
-    #optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
     # optimizer = torch.optim.ASGD(model.parameters(), lr=lr, weight_decay=0.1)  # 3.125% test acc
     # optimizer = torch.optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
@@ -519,8 +519,8 @@ def run_algorithm_for_p1to4():
             #'raw',
             #'preprocessed',
             #'time_features',
-            'frequency_features',
-            #'mfccs'
+            #'frequency_features',
+            'mfccs'
         ]
         for data_type in data_types:
             # print(f"Participant number {participant_n} -- Data type: {data_type}")
@@ -604,7 +604,7 @@ def run_algorithm_for_p1to4():
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
-    df.to_csv(Path(f'{savedir}/{data_type}_results.csv'), index=False)
+    df.to_csv(Path(f'{savedir}/p14_{data_type}_results.csv'), index=False)
 
 
 def run_algorithm_for_p00():
@@ -674,11 +674,11 @@ def run_algorithm_for_binary():
     dataset_type = 'binary'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        'raw',
+        #'raw',
         'preprocessed',
-        'time_features',
-        'frequency_features',
-        'mfccs'
+        #'time_features',
+        #'frequency_features',
+        #'mfccs'
     ]
     for data_type in data_types:
         print(f"\nBinary --> Data type: {data_type}\n")
@@ -752,7 +752,7 @@ def run_algorithm_for_binary():
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
-    df.to_csv(Path(f'{savedir}/binary_results.csv'), index=False)
+    df.to_csv(Path(f'{savedir}/binary_{data_type}_results.csv'), index=False)
 
 
 def run_algorithm_for_feis():
@@ -760,7 +760,7 @@ def run_algorithm_for_feis():
     dataset_type = 'feis'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        #'raw',
+        'raw',
         #'preprocessed',
         #'time_features',
         #'frequency_features',
@@ -838,12 +838,12 @@ def run_algorithm_for_feis():
 
     if not os.path.exists(savedir):
         os.makedirs(savedir)
-    df.to_csv(Path(f'{savedir}/feis_results.csv'), index=False)
+    df.to_csv(Path(f'{savedir}/feis_{data_type}_results.csv'), index=False)
 
 
 if __name__ == '__main__':
-    run_algorithm_for_p1to4()
+    #run_algorithm_for_p1to4()
     #run_algorithm_for_p00()
     #run_algorithm_for_binary()
-    #run_algorithm_for_feis()
+    run_algorithm_for_feis()
     exit()

@@ -67,8 +67,8 @@ class SpeechDataset(Dataset):
 
 
 def load_data():
-    d_set = 'feis'
-    d_type = 'raw'
+    d_set = 'binary'
+    d_type = 'preprocessed'
 
     if d_set == 'p14':
         participant = np.random.randint(1, 5)
@@ -95,7 +95,7 @@ def load_data():
             data = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/mfcc_features.npy')
             labels = np.load(f'features/even_windows/participant_0{participant}/{speech_type}/mfcc_labels.npy')
 
-    if d_set == 'feis':
+    elif d_set == 'feis':
         if d_type == 'raw':
             filepath = f'feis_data/feis-01-thinking.csv'
             df = pd.read_csv(filepath)
@@ -117,6 +117,39 @@ def load_data():
         elif d_type == 'mfccs':
             data = np.load(f'features/even_windows/feis/mfcc_features.npy')
             labels = np.load(f'features/even_windows/feis/mfcc_labels.npy')
+
+    elif d_set == 'p00':
+        speech_type = np.random.choice(['imagined', 'inner'])
+        if d_type == 'raw':
+            filepath = f'../data_preprocessed/participant_00/{speech_type}/preprocessed.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+            data = data.values
+
+    elif d_set == 'binary':
+        if d_type == 'raw':
+            filepath = f'binary_data/p01_imagined_raw_binary.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label', 'Stage'], axis=1)  # RAW
+            data = data.values
+        elif d_type == 'preprocessed':
+            filepath = f'binary_data/p01_imagined_preprocessed_binary.csv'
+            df = pd.read_csv(filepath)
+            labels = df['Label']
+            data = df.drop(labels=['Epoch', 'Label'], axis=1)  # PREPROCESSED
+            data = data.values
+        elif d_type == 'time_features':
+            data = np.load(f'features/even_windows/binary/linear_features.npy')
+            labels = np.load(f'features/even_windows/binary/linear_labels.npy')
+        elif d_type == 'frequency_features':
+            data = np.load(f'features/even_windows/binary/features.npy')
+            labels = np.load(f'features/even_windows/binary/labels.npy')
+        elif d_type == 'mfccs':
+            data = np.load(f'features/even_windows/binary/mfcc_features.npy')
+            labels = np.load(f'features/even_windows/binary/mfcc_labels.npy')
+
     return data, labels, d_type, d_set
 
 
@@ -144,12 +177,12 @@ def build_dataset(batch_size):
             data_norm = data_norm.reshape(1595, -1, 14)
     elif dataset_type == 'binary':
         if data_type == 'raw':
-            y = y.reshape(40, -1, 16)[:, 0, :]
+            y = y.reshape(40, -1, 2)[:, 0, :]
             data_norm = data_norm.reshape(40, -1, 14)
         elif data_type == 'preprocessed':
             y = y[0:30720, :]
             data_norm = data_norm[0:30720, :]
-            y = y.reshape(40, -1, 16)[:, 0, :]
+            y = y.reshape(40, -1, 2)[:, 0, :]
             data_norm = data_norm.reshape(40, -1, 14)
         elif data_type == 'mfccs' or data_type == 'time_features' or data_type == 'frequency_features':
             data_norm = data_norm.reshape(200, -1, 14)
