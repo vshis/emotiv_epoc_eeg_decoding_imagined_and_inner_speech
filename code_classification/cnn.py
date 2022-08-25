@@ -22,15 +22,15 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-BATCH_SIZE = 64
-#CRITERION = nn.CrossEntropyLoss()
-CRITERION = nn.NLLLoss()
+BATCH_SIZE = 32
+CRITERION = nn.CrossEntropyLoss()
+#CRITERION = nn.NLLLoss()
 DROPOUT_RATE = 0
 NUMBER_OF_EPOCHS = 30
-LEARNING_RATE = 0.001
-OPTIMIZER = 'ADAM'
-#OPTIMIZER = 'SGD'
-WEIGHT_DECAY = 0.0
+LEARNING_RATE = 0.0001
+#OPTIMIZER = 'ADAM'
+OPTIMIZER = 'SGD'
+WEIGHT_DECAY = 0.1
 
 
 class ShallowConvNet(nn.Module):
@@ -512,11 +512,11 @@ def run_algorithm_for_p1to4():
 
         # print(f"------\nParticipant number {participant_n}\n------")
         data_types = [
-            #'raw',
+            'raw',
             #'preprocessed',
             #'time_features',
             #'frequency_features',
-            'mfccs'
+            #'mfccs'
         ]
         for data_type in data_types:
             # print(f"Participant number {participant_n} -- Data type: {data_type}")
@@ -589,7 +589,7 @@ def run_algorithm_for_p1to4():
                 print(f"RESULTS :::::::::::: Participant 0{participant_n}, {data_type} data, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
                 results[f'mean_p{participant_n}_{speech_mode}_{data_type}'] = mean
                 results[f'std_p{participant_n}_{speech_mode}_{data_type}'] = std
-
+    exit()
     df = pd.DataFrame()
     for header, values in list(results.items()):
         if type(values) is float:
@@ -837,8 +837,8 @@ def run_algorithm_for_feis():
 
 
 if __name__ == '__main__':
-    #run_algorithm_for_p1to4()
-    run_algorithm_for_p00()
+    run_algorithm_for_p1to4()
+    #run_algorithm_for_p00()
     #run_algorithm_for_binary()
     #run_algorithm_for_feis()
     exit()
