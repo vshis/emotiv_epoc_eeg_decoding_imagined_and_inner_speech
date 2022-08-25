@@ -22,14 +22,14 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 #CRITERION = nn.CrossEntropyLoss()
 CRITERION = nn.NLLLoss()
-DROPOUT_RATE = 0.75
+DROPOUT_RATE = 0
 NUMBER_OF_EPOCHS = 30
-LEARNING_RATE = 0.1
-#OPTIMIZER = 'ADAM'
-OPTIMIZER = 'SGD'
+LEARNING_RATE = 0.001
+OPTIMIZER = 'ADAM'
+#OPTIMIZER = 'SGD'
 WEIGHT_DECAY = 0.0
 
 
@@ -651,7 +651,6 @@ def run_algorithm_for_p00():
         results[f'mean_{speech_mode}_{data_type}'] = mean
         results[f'std_{speech_mode}_{data_type}'] = std
 
-    exit()
     df = pd.DataFrame()
     for header, values in list(results.items()):
         if type(values) is float:
