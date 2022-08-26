@@ -22,15 +22,15 @@ import pprint
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
-BATCH_SIZE = 32
-CRITERION = nn.CrossEntropyLoss()
-#CRITERION = nn.NLLLoss()
+BATCH_SIZE = 64
+#CRITERION = nn.CrossEntropyLoss()
+CRITERION = nn.NLLLoss()
 DROPOUT_RATE = 0
-NUMBER_OF_EPOCHS = 30
-LEARNING_RATE = 0.0001
+NUMBER_OF_EPOCHS = 50
+LEARNING_RATE = 0.01
 #OPTIMIZER = 'ADAM'
 OPTIMIZER = 'SGD'
-WEIGHT_DECAY = 0.1
+WEIGHT_DECAY = 0.01
 
 
 class ShallowConvNet(nn.Module):
@@ -512,11 +512,11 @@ def run_algorithm_for_p1to4():
 
         # print(f"------\nParticipant number {participant_n}\n------")
         data_types = [
-            'raw',
+            #'raw',
             #'preprocessed',
             #'time_features',
             #'frequency_features',
-            #'mfccs'
+            'mfccs'
         ]
         for data_type in data_types:
             # print(f"Participant number {participant_n} -- Data type: {data_type}")
