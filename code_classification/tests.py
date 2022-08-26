@@ -4,7 +4,6 @@ from pathlib import Path
 import sigfig
 import math
 
-
 NAMES = {
     "AdaBoostClassifier()": "AB (e=50, lr=1.0)",
     "AdaBoostClassifier(learning_rate=0.1)": "AB (e=50, lr=0.1)",
@@ -24,6 +23,8 @@ NAMES = {
     "KNeighborsClassifier(n_jobs=-2, n_neighbors=89)": "KNN (k=89)",
     "LinearDiscriminantAnalysis()": "LDA",
     "SVC(cache_size=2000)": "SVM (RBF)",
+    "SVC(cache_size=2000, degree=2, kernel='poly')": "SVM (polynomial, degree=2)",
+    "SVC(cache_size=2000, degree=4, kernel='poly')": "SVM (polynomial, degree=4)",
     "SVC(cache_size=2000, kernel='poly')": "SVM (polynomial)",
     "SVC(cache_size=2000, kernel='sigmoid')": "SVM (sigmoid)",
 }
@@ -78,9 +79,11 @@ def print_rounded(df, df100_rounded, data_type='test'):
     print(f"Accurices (std) for data type: {data_type}\n")
     floors = {'train': 0, 'test': 2}
     for row_n in range(df100_rounded.shape[0]):
-        print(f"{df.iloc[[row_n]].values[0][0]} ", end="")
-        for index in range(floors[data_type], 40, 4):  # p01-04
-        #for index in range(floors[data_type], 8, 4):  # p00
+        # print(f"{df.iloc[[row_n]].values[0][0]} ", end="")
+        print(f"{list(NAMES.values())[row_n]} ", end="")
+        # for index in range(floors[data_type], 40, 4):  # p01-04
+        for index in range(floors[data_type], 20, 4):  # binary
+            # for index in range(floors[data_type], 8, 4):  # p00
             mean = df100_rounded.iloc[[row_n]].values[0][index]
             std = df100_rounded.iloc[[row_n]].values[0][index + 1]
             # if not math.isnan(mean):
@@ -123,20 +126,40 @@ if __name__ == '__main__':
                'mfcc_inner_train_mean', 'mfcc_inner_train_std',
                'mfcc_inner_test_mean', 'mfcc_inner_test_std']
 
-    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/participant_04.csv')
+    headers_binary = [
+        'raw_train_mean', 'raw_train_std',
+        'raw_test_mean', 'raw_test_std',
+        'preprocessed_train_mean', 'preprocessed_train_std',
+        'preprocessed_test_mean', 'preprocessed_test_std',
+        'linear_train_mean', 'linear_train_std',
+        'linear_test_mean', 'linear_test_std',
+        'features_train_mean', 'features_train_std',
+        'features_test_mean', 'features_test_std',
+        'mfcc_train_mean', 'mfcc_train_std',
+        'mfcc_test_mean', 'mfcc_test_std'
+    ]
+
+    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/feis.csv')
     df100 = df.select_dtypes(exclude=['object']) * 100
     # df100_rounded = df100.round(2)
     df100_rounded = df100
     new_df = pd.DataFrame()
 
     # p00
-    #for header in headers_p00:
+    # for header in headers_p00:
     #    new_df[header] = df100_rounded[header]
-    #print_rounded(df, df100_rounded, data_type='test')
+    # print_rounded(df, df100_rounded, data_type='test')
 
-    # p01-04
-    for header in headers:
+    # binary & feis
+    for header in headers_binary:
         new_df[header] = df100_rounded[header]
-    print_rounded(df, df100_rounded, data_type='train')
+    print_rounded(df, new_df, data_type='train')
     print()
     print_rounded(df, new_df, data_type='test')
+
+    # p01-04
+    #for header in headers:
+    #    new_df[header] = df100_rounded[header]
+    #print_rounded(df, df100_rounded, data_type='train')
+    #print()
+    #print_rounded(df, new_df, data_type='test')
