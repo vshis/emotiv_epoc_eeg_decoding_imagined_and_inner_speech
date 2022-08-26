@@ -1,6 +1,32 @@
 import pandas as pd
 import os
 from pathlib import Path
+import sigfig
+import math
+
+
+NAMES = {
+    "AdaBoostClassifier()": "AB (e=50, lr=1.0)",
+    "AdaBoostClassifier(learning_rate=0.1)": "AB (e=50, lr=0.1)",
+    "AdaBoostClassifier(learning_rate=0.5)": "AB (e=50, lr=0.5)",
+    "AdaBoostClassifier(learning_rate=1.5)": "AB (e=50, lr=1.5)",
+    "AdaBoostClassifier(learning_rate=2.0)": "AB (e=50, lr=2.0)",
+    "AdaBoostClassifier(n_estimators=100)": "AB (e=100, lr=1.0)",
+    "AdaBoostClassifier(n_estimators=200)": "AB (e=200, lr=1.0)",
+    "AdaBoostClassifier(n_estimators=400)": "AB (e=400, lr=1.0)",
+    "GaussianNB()": "Gaussian NB",
+    "KNeighborsClassifier(n_jobs=-2)": "KNN (k=5)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=1)": "KNN (k=1)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=13)": "KNN (k=13)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=139)": "KNN (k=139)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=25)": "KNN (k=25)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=53)": "KNN (k=53)",
+    "KNeighborsClassifier(n_jobs=-2, n_neighbors=89)": "KNN (k=89)",
+    "LinearDiscriminantAnalysis()": "LDA",
+    "SVC(cache_size=2000)": "SVM (RBF)",
+    "SVC(cache_size=2000, kernel='poly')": "SVM (polynomial)",
+    "SVC(cache_size=2000, kernel='sigmoid')": "SVM (sigmoid)",
+}
 
 
 def get_results_paths(results_dir, algorithms):
@@ -12,7 +38,7 @@ def get_results_paths(results_dir, algorithms):
     return results_paths
 
 
-if __name__ == '__main__':
+def combine_results():
     results_dir = 'classification_results/'
     algorithms = ['LinearDiscriminantAnalysis', 'GaussianNB', 'SVC', 'AdaBoostClassifier', 'KNeighborsClassifier']
     results_paths = get_results_paths(results_dir, algorithms)
@@ -46,3 +72,71 @@ if __name__ == '__main__':
         dfs.append(df)
     df = pd.concat(dfs)
     df.to_csv(f'classification_results/ALL_CONVENTIONAL/participant_00.csv', index=False)
+
+
+def print_rounded(df, df100_rounded, data_type='test'):
+    print(f"Accurices (std) for data type: {data_type}\n")
+    floors = {'train': 0, 'test': 2}
+    for row_n in range(df100_rounded.shape[0]):
+        print(f"{df.iloc[[row_n]].values[0][0]} ", end="")
+        for index in range(floors[data_type], 40, 4):  # p01-04
+        #for index in range(floors[data_type], 8, 4):  # p00
+            mean = df100_rounded.iloc[[row_n]].values[0][index]
+            std = df100_rounded.iloc[[row_n]].values[0][index + 1]
+            # if not math.isnan(mean):
+            if math.isnan(mean):
+                print(f"& n/a ", end="")
+            else:
+                mean = sigfig.round(mean, sigfigs=3)
+                std = sigfig.round(std, sigfigs=3)
+                if mean == 100.0:
+                    print(f"& {mean:.0f} ({std:.2f}) ", end="")
+                else:
+                    print(f"& {mean} ({std:.2f}) ", end="")
+        print("\\\\")
+
+
+if __name__ == '__main__':
+    headers_p00 = ['raw_imagined_train_mean', 'raw_imagined_train_std',
+                   'raw_imagined_test_mean', 'raw_imagined_test_std',
+                   'raw_inner_train_mean', 'raw_inner_train_std',
+                   'raw_inner_test_mean', 'raw_inner_test_std']
+
+    headers = ['raw_imagined_train_mean', 'raw_imagined_train_std',
+               'raw_imagined_test_mean', 'raw_imagined_test_std',
+               'preprocessed_imagined_train_mean', 'preprocessed_imagined_train_std',
+               'preprocessed_imagined_test_mean', 'preprocessed_imagined_test_std',
+               'linear_imagined_train_mean', 'linear_imagined_train_std',
+               'linear_imagined_test_mean', 'linear_imagined_test_std',
+               'features_imagined_train_mean', 'features_imagined_train_std',
+               'features_imagined_test_mean', 'features_imagined_test_std',
+               'mfcc_imagined_train_mean', 'mfcc_imagined_train_std',
+               'mfcc_imagined_test_mean', 'mfcc_imagined_test_std',
+               'raw_inner_train_mean', 'raw_inner_train_std',
+               'raw_inner_test_mean', 'raw_inner_test_std',
+               'preprocessed_inner_train_mean', 'preprocessed_inner_train_std',
+               'preprocessed_inner_test_mean', 'preprocessed_inner_test_std',
+               'linear_inner_train_mean', 'linear_inner_train_std',
+               'linear_inner_test_mean', 'linear_inner_test_std',
+               'features_inner_train_mean', 'features_inner_train_std',
+               'features_inner_test_mean', 'features_inner_test_std',
+               'mfcc_inner_train_mean', 'mfcc_inner_train_std',
+               'mfcc_inner_test_mean', 'mfcc_inner_test_std']
+
+    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/participant_04.csv')
+    df100 = df.select_dtypes(exclude=['object']) * 100
+    # df100_rounded = df100.round(2)
+    df100_rounded = df100
+    new_df = pd.DataFrame()
+
+    # p00
+    #for header in headers_p00:
+    #    new_df[header] = df100_rounded[header]
+    #print_rounded(df, df100_rounded, data_type='test')
+
+    # p01-04
+    for header in headers:
+        new_df[header] = df100_rounded[header]
+    print_rounded(df, df100_rounded, data_type='train')
+    print()
+    print_rounded(df, new_df, data_type='test')
