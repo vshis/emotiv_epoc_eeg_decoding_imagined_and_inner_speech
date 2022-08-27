@@ -3,6 +3,8 @@ from pathlib import Path
 import sigfig
 import math
 
+import warnings
+warnings.filterwarnings("ignore")
 
 NAMES = {
     "AdaBoostClassifier()": "AB (e=50, lr=1.0)",
@@ -81,9 +83,9 @@ def print_rounded(df, df100_rounded, data_type='test'):
     for row_n in range(df100_rounded.shape[0]):
         # print(f"{df.iloc[[row_n]].values[0][0]} ", end="")
         print(f"{list(NAMES.values())[row_n]} ", end="")
-        # for index in range(floors[data_type], 40, 4):  # p01-04
-        for index in range(floors[data_type], 20, 4):  # binary
-            # for index in range(floors[data_type], 8, 4):  # p00
+        for index in range(floors[data_type], 40, 4):  # p01-04
+        #for index in range(floors[data_type], 20, 4):  # binary
+        #for index in range(floors[data_type], 8, 4):  # p00
             mean = df100_rounded.iloc[[row_n]].values[0][index]
             std = df100_rounded.iloc[[row_n]].values[0][index + 1]
             # if not math.isnan(mean):
@@ -99,7 +101,7 @@ def print_rounded(df, df100_rounded, data_type='test'):
         print("\\\\")
 
 
-def print_conv_results():
+def print_conventional_results():
     headers_p00 = ['raw_imagined_train_mean', 'raw_imagined_train_std',
                    'raw_imagined_test_mean', 'raw_imagined_test_std',
                    'raw_inner_train_mean', 'raw_inner_train_std',
@@ -139,7 +141,7 @@ def print_conv_results():
         'mfcc_test_mean', 'mfcc_test_std'
     ]
 
-    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/feis.csv')
+    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/participant_04.csv')
     df100 = df.select_dtypes(exclude=['object']) * 100
     # df100_rounded = df100.round(2)
     df100_rounded = df100
@@ -151,21 +153,21 @@ def print_conv_results():
     # print_rounded(df, df100_rounded, data_type='test')
 
     # binary & feis
-    for header in headers_binary:
+    #for header in headers_binary:
+    #    new_df[header] = df100_rounded[header]
+    #print_rounded(df, new_df, data_type='train')
+    #print()
+    #print_rounded(df, new_df, data_type='test')
+
+    # p01-04
+    for header in headers:
         new_df[header] = df100_rounded[header]
     print_rounded(df, new_df, data_type='train')
     print()
     print_rounded(df, new_df, data_type='test')
 
-    # p01-04
-    #for header in headers:
-    #    new_df[header] = df100_rounded[header]
-    #print_rounded(df, df100_rounded, data_type='train')
-    #print()
-    #print_rounded(df, new_df, data_type='test')
 
-
-if __name__ == '__main__':
+def print_eegnet_results():
     files = [path for path in Path('classification_results/eegnet').iterdir()]
     for file in files:
         print(file.name)
@@ -173,3 +175,7 @@ if __name__ == '__main__':
         for index in range(0, len(values), 2):
             print(f"{values[index]:.2f} ({values[index+1]:.2f})")
         print()
+
+
+if __name__ == '__main__':
+    print_conventional_results()
