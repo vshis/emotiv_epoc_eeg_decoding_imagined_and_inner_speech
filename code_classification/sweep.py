@@ -1,16 +1,12 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelBinarizer
 from torch.utils.data import DataLoader, Dataset
-import os
-from pathlib import Path
 import wandb
-from cnn import EEGNet
+from eegnet import EEGNet
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

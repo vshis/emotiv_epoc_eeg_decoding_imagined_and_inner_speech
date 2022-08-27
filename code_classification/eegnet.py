@@ -1,72 +1,45 @@
+"""
+References:
+    Vernon J Lawhern et al. “EEGNet: a compact convolutional neural network for EEG-based
+    brain-computer interfaces”. en. In: J Neural Eng 15.5 (June 2018), p. 056013.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
 import numpy as np
-import time
-from sklearn.metrics import cohen_kappa_score, f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelBinarizer
 from torch.utils.data import DataLoader, Dataset
-from torch.optim.optimizer import Optimizer
-from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ReduceLROnPlateau
 from tqdm import tqdm
-from sklearn import metrics
-from torchinfo import summary
 import os
 from pathlib import Path
-import wandb
-import pprint
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f"Using {torch.cuda.get_device_name(device)}")
 
+
+# HYPERPARAMETERS
 BATCH_SIZE = 64
-#CRITERION = nn.CrossEntropyLoss()
+# CRITERION = nn.CrossEntropyLoss()
 CRITERION = nn.NLLLoss()
 DROPOUT_RATE = 0
 NUMBER_OF_EPOCHS = 50
 LEARNING_RATE = 0.01
-#OPTIMIZER = 'ADAM'
+# OPTIMIZER = 'ADAM'
 OPTIMIZER = 'SGD'
 WEIGHT_DECAY = 0.01
 
 
-class ShallowConvNet(nn.Module):
-    """
-    From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py
-    Original paper: https://onlinelibrary.wiley.com/doi/10.1002/hbm.23730
-    """
-
-    def __init__(self, in_channels, num_classes):
-        super(ShallowConvNet, self).__init__()
-
-        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=40, kernel_size=(25, 1))
-        self.conv2 = nn.Conv2d(in_channels=40, out_channels=40, kernel_size=(1, 14), bias=False)
-        self.batchnorm1 = nn.BatchNorm2d(40)
-        self.pool1 = nn.AvgPool2d(kernel_size=(75, 1), stride=(15, 1))
-        self.drop1 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(1800, num_classes)
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.batchnorm1(x)
-        x = self.conv2(x)
-        x = self.batchnorm1(x)
-        x = torch.square(x)
-        x = self.pool1(x)
-        x = torch.log(x)
-        x = self.drop1(x)
-        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
-        x = self.fc1(x)
-        x = self.softmax(x)
-        return x
-
-
 class EEGNet(nn.Module):
-    """From https://github.com/vlawhern/arl-eegmodels/blob/master/EEGModels.py"""
+    """
+    Implementation of EEGNet in PyTorch, originally written by the authors in TensorFlow, reference:
+    Vernon J Lawhern et al. “EEGNet: a compact convolutional neural network for EEG-based
+    brain-computer interfaces”. en. In: J Neural Eng 15.5 (June 2018), p. 056013.
+    """
 
     def __init__(self, in_channels, num_classes, data_type='raw', dataset_type='p14', dropout_rate=0.5):
         super(EEGNet, self).__init__()
@@ -127,7 +100,8 @@ class EEGNet(nn.Module):
         self.pooling1 = nn.AvgPool2d(kernel_size=self.pool1_size)
 
         # third layer - depthwise-separable convolution (depthwise convolution + pointwise convolution)
-        self.depth_conv2 = nn.Conv2d(in_channels=self.F2, out_channels=self.F2, kernel_size=self.depth_conv2_kernel_size,
+        self.depth_conv2 = nn.Conv2d(in_channels=self.F2, out_channels=self.F2,
+                                     kernel_size=self.depth_conv2_kernel_size,
                                      groups=self.F2, bias=False)
         # pointwise convolution
         self.point_conv = nn.Conv2d(in_channels=self.F2, out_channels=self.F2, kernel_size=1, bias=False)
@@ -158,185 +132,6 @@ class EEGNet(nn.Module):
         # Layer 4
         x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
         x = self.fc1(x)
-        x = self.softmax(x)
-        return x
-
-
-class Conv2DClassifier(nn.Module):
-    def __init__(self, channels_in, num_classes):
-        super(Conv2DClassifier, self).__init__()
-
-        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=12, kernel_size=(153, 1))
-
-        self.fc1 = nn.Linear(612, num_classes)
-
-        self.bn1 = nn.BatchNorm2d(12)
-
-        self.maxpool = nn.MaxPool2d(kernel_size=12)
-
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        # print(x.shape)
-        x = self.conv1(x)
-        x = self.maxpool(x)
-
-        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
-        x = self.fc1(x)
-        x = self.softmax(x)
-        return x
-
-
-class ResClassifier(nn.Module):
-    def __init__(self, input_size, num_classes):
-        super(ResClassifier, self).__init__()
-
-        self.conv = nn.Conv1d(in_channels=input_size, out_channels=32, kernel_size=4, stride=1)
-
-        self.conv_pad = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=4, stride=1, padding=1)
-        self.drop_50 = nn.Dropout(p=0.5)
-
-        self.maxpool = nn.MaxPool1d(kernel_size=5, stride=2)
-
-        self.dense1 = nn.Linear(96, 32)
-        self.dense2 = nn.Linear(32, 32)
-
-        self.dense_final = nn.Linear(32, num_classes)
-        self.softmax = nn.LogSoftmax(dim=1)
-
-    def forward(self, x):
-        residual = self.conv(x)
-
-        # block1
-        x = F.relu(self.conv_pad(residual))
-        x = self.conv_pad(x)
-        x += residual
-        x = F.relu(x)
-        residual = self.maxpool(x)  # [512 32 90]
-
-        # block2
-        x = F.relu(self.conv_pad(residual))
-        x = self.conv_pad(x)
-        x += residual
-        x = F.relu(x)
-        residual = self.maxpool(x)  # [512 32 43]
-
-        # block3
-        x = F.relu(self.conv_pad(residual))
-        x = self.conv_pad(x)
-        x += residual
-        x = F.relu(x)
-        residual = self.maxpool(x)  # [512 32 20]
-
-        # block4
-        x = F.relu(self.conv_pad(residual))
-        x = self.conv_pad(x)
-        x += residual
-        x = F.relu(x)
-        x = self.maxpool(x)  # [512 32 8]
-
-        # MLP
-        x = x.view(-1, 96)  # Reshape (current_dim, 32*2)
-        x = F.relu(self.dense1(x))
-        # x = self.drop_60(x)
-        x = self.dense2(x)
-        x = self.softmax(self.dense_final(x))
-        # x = self.dense_final(x)
-        return x
-
-
-class Conv2DMFCCClassifier(nn.Module):
-    """From https://ieeexplore.ieee.org/document/8832223"""
-
-    def __init__(self, channels_in, num_classes):
-        super(Conv2DMFCCClassifier, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=channels_in, out_channels=20, kernel_size=(4, 4))
-        self.batchnorm1 = nn.BatchNorm2d(20)
-
-        self.conv2 = nn.Conv2d(in_channels=20, out_channels=10, kernel_size=(8, 8))
-        self.batchnorm2 = nn.BatchNorm2d(10)
-
-        self.fc1 = nn.Linear(120, 1024)
-        self.fc2 = nn.Linear(1024, 128)
-        self.fc3 = nn.Linear(128, num_classes)
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        # Layer 1
-        x = self.conv1(x)
-        x = torch.tanh(x)
-        # x = self.batchnorm1(F.relu(x))
-        # Layer 2
-        x = self.conv2(x)
-        x = torch.tanh(x)
-        # x = self.batchnorm2(F.relu(x))
-        # Layer 3 flatten
-        x = x.view(-1, x.shape[-1] * x.shape[-2] * x.shape[-3])
-        # Layer 4
-        x = self.fc1(x)
-        # Layer 5
-        x = self.fc2(x)
-        # Layer 6
-        x = self.fc3(x)
-        x = self.softmax(x)
-        return x
-
-
-class Conv1DFeaturesClassifier(nn.Module):
-    """Based on this paper: https://iopscience.iop.org/article/10.1088/1741-2552/ac4430#jneac4430s2"""
-
-    def __init__(self, channels_in, num_classes):
-        super(Conv1DFeaturesClassifier, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=channels_in, out_channels=32, kernel_size=20, padding='same')
-        self.batchnorm1 = nn.BatchNorm1d(32)
-
-        self.conv2 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=20)
-        self.batchnorm2 = nn.BatchNorm1d(32)
-        self.drop = nn.Dropout(0.5)
-
-        self.conv3 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=6)
-        self.pool1 = nn.AvgPool1d(kernel_size=2, stride=2)
-
-        self.conv4 = nn.Conv1d(in_channels=32, out_channels=32, kernel_size=6)
-
-        # self.fc1 = nn.Linear(1920, 256)  # time features
-        # self.fc1 = nn.Linear(1024, 256)  # freq features
-        self.fc1 = nn.Linear(2368, 256)  # mfccs
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(64, 16)
-
-        self.softmax = nn.Softmax(dim=1)
-
-    def forward(self, x):
-        # print(x.shape)
-        # Layer 1
-        x = F.relu(self.conv1(x))
-        x = self.batchnorm1(x)
-        # Layer 2
-        x = F.relu(self.conv2(x))
-        x = self.batchnorm2(x)
-        x = self.drop(x)
-        # Layer 3
-        x = F.relu(self.conv3(x))
-        # Layer 4
-        x = self.pool1(x)
-        # Layer 5
-        x = F.relu(self.conv4(x))
-        x = self.drop(x)
-        # Layer 6
-        x = x.view(-1, x.shape[-1] * x.shape[-2])
-        # Layer 7
-        x = F.relu(self.fc1(x))
-        x = self.drop(x)
-        # Layer 8
-        x = F.relu(self.fc2(x))
-        x = self.drop(x)
-        # Layer 9
-        x = F.relu(self.fc3(x))
-        x = self.drop(x)
-        # Layer 10
-        x = self.fc4(x)
         x = self.softmax(x)
         return x
 
@@ -410,26 +205,23 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
 
     criterion = CRITERION
 
-    # Build model, initial weight and optimizer
-    # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)
-    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)
-    # model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
-
-    # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
-
     model = EEGNet(in_channels=1,
                    num_classes=num_classes,
                    data_type=data_type,
                    dropout_rate=DROPOUT_RATE,
                    dataset_type=dataset_type).to(device)
-    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
 
-    #print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    # print(f"Total number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     if OPTIMIZER == 'ADAM':
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
+        optimizer = torch.optim.Adam(model.parameters(),
+                                     lr=lr,
+                                     weight_decay=WEIGHT_DECAY)
     elif OPTIMIZER == 'SGD':
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=WEIGHT_DECAY)  # 12.5% test acc
+        optimizer = torch.optim.SGD(model.parameters(),
+                                    lr=lr,
+                                    momentum=0.9,
+                                    weight_decay=WEIGHT_DECAY)
 
     best_accuracy = 0.0
 
@@ -469,23 +261,18 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
         if accuracy > best_accuracy:
             torch.save(model.state_dict(), 'model.pt')
             best_accuracy = accuracy
-        #if (epoch + 1) % 10 == 0:
+        # if (epoch + 1) % 10 == 0:
         #    print(
         #        f"Epoch {epoch + 1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
-def test_model(test_loader, data_type, dataset_type, num_classes=16):
+def predict_model(test_loader, data_type, dataset_type, num_classes=16):
     """Returns test accuracy"""
-    # model = Conv1DRawClassifier(channels_in=1, num_classes=16).to(device)  # RAW
-    # model = Conv1DFeaturesClassifier(channels_in=1, num_classes=16).to(device)  # FEATURES
-    # model = Conv2DMFCCClassifier(channels_in=1, num_classes=16).to(device)
-    # model = Conv2DClassifier(channels_in=1, num_classes=16).to(device)
     model = EEGNet(in_channels=1,
                    num_classes=num_classes,
                    data_type=data_type,
                    dropout_rate=0,
                    dataset_type=dataset_type).to(device)
-    # model = ShallowConvNet(in_channels=1, num_classes=16).to(device)
     model.load_state_dict(torch.load('model.pt'))
     running_accuracy = 0
     total = 0
@@ -512,10 +299,10 @@ def run_algorithm_for_p1to4():
 
         # print(f"------\nParticipant number {participant_n}\n------")
         data_types = [
-            #'raw',
-            #'preprocessed',
-            #'time_features',
-            #'frequency_features',
+            # 'raw',
+            # 'preprocessed',
+            # 'time_features',
+            # 'frequency_features',
             'mfccs'
         ]
         for data_type in data_types:
@@ -525,7 +312,8 @@ def run_algorithm_for_p1to4():
                 'inner'
             ]
             for speech_mode in speech_modes:
-                print(f"\nRUNNING: Participant number {participant_n} --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
+                print(
+                    f"\nRUNNING: Participant number {participant_n} --> Data type: {data_type} --> Speech mode: {speech_mode}\n")
                 # RAW
                 if data_type == 'raw':
                     filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
@@ -581,15 +369,16 @@ def run_algorithm_for_p1to4():
                     test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
                     train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-                    test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+                    test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
                     accs.append(test_acc)
 
                 mean = float(np.mean(accs))
                 std = float(np.std(accs))
-                print(f"RESULTS :::::::::::: Participant 0{participant_n}, {data_type} data, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
+                print(
+                    f"RESULTS :::::::::::: Participant 0{participant_n}, {data_type} data, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
                 results[f'mean_p{participant_n}_{speech_mode}_{data_type}'] = mean
                 results[f'std_p{participant_n}_{speech_mode}_{data_type}'] = std
-    exit()
+
     df = pd.DataFrame()
     for header, values in list(results.items()):
         if type(values) is float:
@@ -642,7 +431,7 @@ def run_algorithm_for_p00():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
@@ -669,10 +458,10 @@ def run_algorithm_for_binary():
     dataset_type = 'binary'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        #'raw',
-        #'preprocessed',
-        #'time_features',
-        #'frequency_features',
+        # 'raw',
+        # 'preprocessed',
+        # 'time_features',
+        # 'frequency_features',
         'mfccs'
     ]
     for data_type in data_types:
@@ -728,7 +517,7 @@ def run_algorithm_for_binary():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type, num_classes=2)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type, num_classes=2)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type, num_classes=2)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
@@ -755,10 +544,10 @@ def run_algorithm_for_feis():
     dataset_type = 'feis'
     # print(f"------\nParticipant number {participant_n}\n------")
     data_types = [
-        #'raw',
-        #'preprocessed',
-        #'time_features',
-        #'frequency_features',
+        # 'raw',
+        # 'preprocessed',
+        # 'time_features',
+        # 'frequency_features',
         'mfccs'
     ]
     for data_type in data_types:
@@ -814,7 +603,7 @@ def run_algorithm_for_feis():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
@@ -837,8 +626,9 @@ def run_algorithm_for_feis():
 
 
 if __name__ == '__main__':
-    run_algorithm_for_p1to4()
-    #run_algorithm_for_p00()
-    #run_algorithm_for_binary()
-    #run_algorithm_for_feis()
+    # UNCOMMENT APPROPRIATE LINE
+    # run_algorithm_for_p1to4()
+    # run_algorithm_for_p00()
+    # run_algorithm_for_binary()
+    # run_algorithm_for_feis()
     exit()
