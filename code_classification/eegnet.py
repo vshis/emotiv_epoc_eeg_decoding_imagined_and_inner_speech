@@ -266,7 +266,7 @@ def train_model(train_loader, val_loader, data_type, dataset_type, num_classes=1
         #        f"Epoch {epoch + 1} \t Learning Rate: {optimizer.param_groups[0]['lr']} \t Training Loss: {train_loss_value:.4f} \t Validation Loss: {val_loss_value:.4f} \t Validation accuracy: {accuracy:.3f}%")
 
 
-def test_model(test_loader, data_type, dataset_type, num_classes=16):
+def predict_model(test_loader, data_type, dataset_type, num_classes=16):
     """Returns test accuracy"""
     model = EEGNet(in_channels=1,
                    num_classes=num_classes,
@@ -369,7 +369,7 @@ def run_algorithm_for_p1to4():
                     test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
                     train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-                    test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+                    test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
                     accs.append(test_acc)
 
                 mean = float(np.mean(accs))
@@ -378,7 +378,7 @@ def run_algorithm_for_p1to4():
                     f"RESULTS :::::::::::: Participant 0{participant_n}, {data_type} data, {speech_mode} speech mean (std) accuracy = {mean:.2f} ({std:.2f})")
                 results[f'mean_p{participant_n}_{speech_mode}_{data_type}'] = mean
                 results[f'std_p{participant_n}_{speech_mode}_{data_type}'] = std
-    exit()
+
     df = pd.DataFrame()
     for header, values in list(results.items()):
         if type(values) is float:
@@ -431,7 +431,7 @@ def run_algorithm_for_p00():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
@@ -517,7 +517,7 @@ def run_algorithm_for_binary():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type, num_classes=2)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type, num_classes=2)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type, num_classes=2)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
@@ -603,7 +603,7 @@ def run_algorithm_for_feis():
             test_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=test_subsampler)
 
             train_model(train_loader, val_loader, data_type, dataset_type=dataset_type)
-            test_acc = test_model(test_loader, data_type, dataset_type=dataset_type)
+            test_acc = predict_model(test_loader, data_type, dataset_type=dataset_type)
             accs.append(test_acc)
 
         mean = float(np.mean(accs))
