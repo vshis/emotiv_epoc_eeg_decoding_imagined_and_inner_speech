@@ -1,8 +1,8 @@
 import pandas as pd
-import os
 from pathlib import Path
 import sigfig
 import math
+
 
 NAMES = {
     "AdaBoostClassifier()": "AB (e=50, lr=1.0)",
@@ -99,7 +99,7 @@ def print_rounded(df, df100_rounded, data_type='test'):
         print("\\\\")
 
 
-if __name__ == '__main__':
+def print_conv_results():
     headers_p00 = ['raw_imagined_train_mean', 'raw_imagined_train_std',
                    'raw_imagined_test_mean', 'raw_imagined_test_std',
                    'raw_inner_train_mean', 'raw_inner_train_std',
@@ -163,3 +163,13 @@ if __name__ == '__main__':
     #print_rounded(df, df100_rounded, data_type='train')
     #print()
     #print_rounded(df, new_df, data_type='test')
+
+
+if __name__ == '__main__':
+    files = [path for path in Path('classification_results/eegnet').iterdir()]
+    for file in files:
+        print(file.name)
+        values = pd.read_csv(file).values[0]
+        for index in range(0, len(values), 2):
+            print(f"{values[index]:.2f} ({values[index+1]:.2f})")
+        print()
