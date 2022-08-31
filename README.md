@@ -9,6 +9,7 @@ To label all raw data in the raw_eeg_recordings directory, run the label_merge_c
 
 Package versions used:
 * Python 3.8.8
+* PyTorch 1.12.1+cu116
 * Pandas 1.4.2
 * NumPy 1.22.2
 * SciPy 1.8.0
@@ -18,3 +19,4 @@ Package versions used:
 * Antropy 0.1.4
 * Hurst 0.0.5
 * Librosa 0.9.2
+* WandB 0.13.2
