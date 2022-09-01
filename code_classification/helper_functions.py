@@ -83,8 +83,10 @@ def print_rounded(df, df100_rounded, data_type='test'):
     for row_n in range(df100_rounded.shape[0]):
         # print(f"{df.iloc[[row_n]].values[0][0]} ", end="")
         print(f"{list(NAMES.values())[row_n]} ", end="")
-        for index in range(floors[data_type], 40, 4):  # p01-04
-        #for index in range(floors[data_type], 20, 4):  # binary
+        means = []
+        stds = []
+        #for index in range(floors[data_type], 40, 4):  # p01-04
+        for index in range(floors[data_type], 20, 4):  # binary
         #for index in range(floors[data_type], 8, 4):  # p00
             mean = df100_rounded.iloc[[row_n]].values[0][index]
             std = df100_rounded.iloc[[row_n]].values[0][index + 1]
@@ -98,7 +100,17 @@ def print_rounded(df, df100_rounded, data_type='test'):
                     print(f"& {mean:.0f} ({std:.2f}) ", end="")
                 else:
                     print(f"& {mean} ({std:.2f}) ", end="")
+            means.append(mean)
+            stds.append(std)
         print("\\\\")
+        print()
+        print(f"{list(NAMES.values())[row_n]} MEANS AND STDS")
+        #print(f"MEANS :::::::::::: IMAGINED {means[0:5]} INNER {means[5:10]}")
+        #print(f"STDS ::::::::::::: IMAGINED {stds[0:5]} INNER {stds[5:10]}")
+        print(f"MEANS :::::::::::: IMAGINED {means[0:5]}")
+        print(f"STDS ::::::::::::: IMAGINED {stds[0:5]}")
+        print()
+
 
 
 def print_conventional_results():
@@ -141,7 +153,7 @@ def print_conventional_results():
         'mfcc_test_mean', 'mfcc_test_std'
     ]
 
-    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/participant_04.csv')
+    df = pd.read_csv('classification_results/ALL_CONVENTIONAL/feis.csv')
     df100 = df.select_dtypes(exclude=['object']) * 100
     # df100_rounded = df100.round(2)
     df100_rounded = df100
@@ -153,18 +165,18 @@ def print_conventional_results():
     # print_rounded(df, df100_rounded, data_type='test')
 
     # binary & feis
-    #for header in headers_binary:
-    #    new_df[header] = df100_rounded[header]
-    #print_rounded(df, new_df, data_type='train')
-    #print()
-    #print_rounded(df, new_df, data_type='test')
-
-    # p01-04
-    for header in headers:
+    for header in headers_binary:
         new_df[header] = df100_rounded[header]
     print_rounded(df, new_df, data_type='train')
     print()
     print_rounded(df, new_df, data_type='test')
+
+    # p01-04
+    #for header in headers:
+    #    new_df[header] = df100_rounded[header]
+    #print_rounded(df, new_df, data_type='train')
+    #print()
+    #print_rounded(df, new_df, data_type='test')
 
 
 def print_eegnet_results():
@@ -178,6 +190,6 @@ def print_eegnet_results():
 
 
 if __name__ == '__main__':
-    print_eegnet_results()
+    print_conventional_results()
 
 
