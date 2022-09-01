@@ -178,4 +178,6 @@ def print_eegnet_results():
 
 
 if __name__ == '__main__':
-    print_conventional_results()
+    print_eegnet_results()
+
+
