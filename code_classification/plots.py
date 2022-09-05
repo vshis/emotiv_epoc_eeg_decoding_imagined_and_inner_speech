@@ -230,8 +230,8 @@ def bar_plots_all_bars_and_mean_of_data_types():
     # FEIS
     mean_feis = [17.6, 14.7, 8.43, 7.17, 5.41]
     stdd_feis = [0.271, 0.121, 2.0, 2.02, 1.46]
-
     """
+
     """
     # **************** GAUSSIAN NAIVE BAYES **********************
     # p01
@@ -300,10 +300,10 @@ def bar_plots_all_bars_and_mean_of_data_types():
     mean_feis = [13.0, 12.4, 16.2, 11.8, 6.92]
     stdd_feis = [0.216, 0.228, 1.41, 1.92, 1.25]
     """
-    # means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04, mean_feis]
-    # stds = [im_stdd_p01, in_stdd_p01, im_stdd_p02, in_stdd_p02, im_stdd_p03, in_stdd_p03, im_stdd_p04, in_stdd_p04, stdd_feis]
-    means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04]
-    stds = [im_stdd_p01, in_stdd_p01, im_stdd_p02, in_stdd_p02, im_stdd_p03, in_stdd_p03, im_stdd_p04, in_stdd_p04]
+    means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04, mean_feis]
+    stds = [im_stdd_p01, in_stdd_p01, im_stdd_p02, in_stdd_p02, im_stdd_p03, in_stdd_p03, im_stdd_p04, in_stdd_p04, stdd_feis]
+    #means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04]
+    #stds = [im_stdd_p01, in_stdd_p01, im_stdd_p02, in_stdd_p02, im_stdd_p03, in_stdd_p03, im_stdd_p04, in_stdd_p04]
     # means = [mean_feis, im_mean_p01, im_mean_p02, im_mean_p03, im_mean_p04, in_mean_p01, in_mean_p02, in_mean_p03,in_mean_p04]
     # stds = [stdd_feis, im_stdd_p01, im_stdd_p02, im_stdd_p03, im_stdd_p04, in_stdd_p01, in_stdd_p02, in_stdd_p03, in_stdd_p04]
 
@@ -342,7 +342,7 @@ def bar_plots_all_bars_and_mean_of_data_types():
               ]"""
 
     fig, ax = plt.subplots()
-    """
+
     for index, item in enumerate(means):
         ax.bar(brs[index], means[index], yerr=stds[index], color=colours[index], width=bar_w, edgecolor='grey',
                label=labels[index], capsize=4)
@@ -350,10 +350,12 @@ def bar_plots_all_bars_and_mean_of_data_types():
     ax.set_xticks([r + bar_w*4 for r in range(len(in_mean_p01))], data_types, size=12)
     # ax.set_xticklabels(data_types)
     ax.yaxis.grid(True)
-    plt.axhline(4, ls='--', c='grey', label='Chance level', lw=1)
-    plt.legend(loc=1, prop={'size': 11})
-    plt.show()"""
+    plt.axhline(6.25, ls='--', c='grey', label='Chance level', lw=1)
+    plt.legend(loc=1, prop={'size': 11}, ncol=2)
+    plt.show()
 
+    # grey bars
+    """
     mean_per_dtype = []
     std_per_dtype = []
     for index, data_type in enumerate(data_types):
@@ -368,9 +370,11 @@ def bar_plots_all_bars_and_mean_of_data_types():
     ax.set_ylabel('Accuracy (%)', size=12)
     ax.set_xticks(x_pos, size=12)
     ax.set_xticklabels(data_types)
+    plt.axhline(6.25, ls='--', c='grey', label='Chance level', lw=1)
+    plt.legend()
     ax.yaxis.grid(True)
     fig.set_size_inches(5.2, 3)
-    plt.show()
+    plt.show()"""
 
 
 def ab_plot_bar_imagined_vs_inner():
@@ -449,7 +453,9 @@ def ab_plot_bar_imagined_vs_inner():
     ax.set_xticks([r + bar_w / 2 for r in range(len(imagined_means))], ['P01', 'P02', 'P03', 'P04'], size=12)
     # ax.set_xticklabels(data_types)
     ax.yaxis.grid(True)
-    plt.legend(loc=1, prop={'size': 11}, ncol=2)
+    #plt.axhline(6.25, ls='--', c='grey', label='Chance level', lw=1)
+    plt.legend(loc=1, prop={'size': 11}, ncol=3)
+
     fig.set_size_inches(5.2, 4)
     plt.show()
 
@@ -701,10 +707,11 @@ def eegnet_plot_bar_imagined_vs_inner():
 
 
 if __name__ == '__main__':
-    ab_plot_bar_imagined_vs_inner()
-    gnb_plot_bar_imagined_vs_inner()
-    lda_plot_bar_imagined_vs_inner()
-    eegnet_plot_bar_imagined_vs_inner()
+    bar_plots_all_bars_and_mean_of_data_types()
+    #ab_plot_bar_imagined_vs_inner()
+    #gnb_plot_bar_imagined_vs_inner()
+    #lda_plot_bar_imagined_vs_inner()
+    #eegnet_plot_bar_imagined_vs_inner()
     exit()
 
 
