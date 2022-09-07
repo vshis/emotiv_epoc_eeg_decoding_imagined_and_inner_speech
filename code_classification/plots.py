@@ -139,11 +139,11 @@ def plot_for_binary():
     # plt.plot(df['k'], df['Train_mean'], label='original_train')
 
 
-def trend_plots():
+def knn_trend_plots():
     plt.figure()
 
-    plot_for_participant()
-    # plot_for_binary()
+    #plot_for_participant()
+    plot_for_binary()
 
     plt.rcParams.update({'font.size': 12})
     plt.xlabel("k", size=12)
@@ -151,6 +151,7 @@ def trend_plots():
     plt.yticks([i / 100 for i in range(0, 101, 10)], size=12)
     plt.xticks(size=12)
     plt.grid(axis='y')
+    plt.axhline(0.5, ls='--', c='grey', label='Chance level', lw=1)
     plt.legend()
     plt.show()
 
@@ -162,7 +163,7 @@ def bar_plots_all_bars_and_mean_of_data_types():
     # means = [90.0, 90.0, 100, 99.0, 100]
     # stds = [12.3, 12.3, 0.00, 2.00, 0.00]
     bar_w = 0.1
-
+    """
     # EEGNET
     print(":::::::::::::::::::::::: EEGNet ::::::::::::::::::::::::\n")
     # p01
@@ -196,7 +197,7 @@ def bar_plots_all_bars_and_mean_of_data_types():
     # FEIS
     mean_feis = [8.75, 7.50, 9.50, 5.00, 7.00]
     stdd_feis = [5.00, 4.68, 2.69, 0.79, 2.81]
-
+    """
     """
     # **************** ADAPTIVE BOOSTING e=200, lr=1.0 **********************
     # p01
@@ -265,7 +266,7 @@ def bar_plots_all_bars_and_mean_of_data_types():
     # FEIS
     mean_feis = [12.8, 11.5, 7.92, 8.43, 6.04]
     stdd_feis = [0.172, 0.162, 1.41, 1.3, 1.11]
-    """
+
     """
     # **************** LINEAR DISCRIMINANT ANALYSIS **********************
     # p01
@@ -299,7 +300,7 @@ def bar_plots_all_bars_and_mean_of_data_types():
     # FEIS
     mean_feis = [13.0, 12.4, 16.2, 11.8, 6.92]
     stdd_feis = [0.216, 0.228, 1.41, 1.92, 1.25]
-    """
+
     means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04, mean_feis]
     stds = [im_stdd_p01, in_stdd_p01, im_stdd_p02, in_stdd_p02, im_stdd_p03, in_stdd_p03, im_stdd_p04, in_stdd_p04, stdd_feis]
     #means = [im_mean_p01, in_mean_p01, im_mean_p02, in_mean_p02, im_mean_p03, in_mean_p03, im_mean_p04, in_mean_p04]
@@ -318,8 +319,8 @@ def bar_plots_all_bars_and_mean_of_data_types():
     br9 = [x + bar_w for x in br8]
 
     brs = [br1, br2, br3, br4, br5, br6, br7, br8, br9]
-    colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:olive',
-               'tab:cyan']
+    #colours = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:olive', 'tab:cyan']
+    colours = ['orangered', 'salmon', 'lightseagreen', 'turquoise', 'mediumorchid', 'violet', 'darkblue', 'royalblue', 'palegreen']
     labels = ['P01 imagined',
               'P01 inner',
               'P02 imagined',
@@ -707,6 +708,7 @@ def eegnet_plot_bar_imagined_vs_inner():
 
 
 if __name__ == '__main__':
+    #knn_trend_plots()
     bar_plots_all_bars_and_mean_of_data_types()
     #ab_plot_bar_imagined_vs_inner()
     #gnb_plot_bar_imagined_vs_inner()
