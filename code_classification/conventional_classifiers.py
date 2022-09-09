@@ -75,6 +75,8 @@ def prep_and_run(model, filepath: str, data_type: str):
         data = df.drop(labels=['Epoch', 'Label'], axis=1)
     elif data_type == 'feis_raw':
         data = df.drop(labels=['Time:256Hz', 'Epoch', 'Label', 'Stage', 'Flag'], axis=1)
+    print(data.shape)
+    exit()
     return run_model(data, labels, model)
 
 
@@ -87,7 +89,7 @@ def run_model_for_participant(participant_n: int, model):
     for speech_mode in speech_modes:
         print(f"------\nSpeech mode: {speech_mode}\n------")
         # Raw
-        """print("------------- Raw")
+        print("------------- Raw")
         filepath = f'../raw_eeg_recordings_labelled/participant_0{participant_n}/{speech_mode}/thinking_labelled.csv'
         mean_train, std_train, mean_test, std_test = prep_and_run(model, filepath, 'raw')
         accuracies[f'raw_{speech_mode}_train_mean'] = mean_train
@@ -126,7 +128,7 @@ def run_model_for_participant(participant_n: int, model):
         accuracies[f'mfcc_{speech_mode}_train_mean'] = mean_train
         accuracies[f'mfcc_{speech_mode}_train_std'] = std_train
         accuracies[f'mfcc_{speech_mode}_test_mean'] = mean_test
-        accuracies[f'mfcc_{speech_mode}_test_std'] = std_test"""
+        accuracies[f'mfcc_{speech_mode}_test_std'] = std_test
 
         # Linear Features
         print("------------- Linear Features")
