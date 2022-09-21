@@ -1,9 +1,9 @@
 # An investigation into decoding imagined and inner speech processes from commercial EEG devices
 Repository in support of the University of Bath Computer Science MSc dissertation
 
-The full dissertation report can be found [here](/dissertation_report_final.pdf)
+[![Introductory video](https://img.youtube.com/vi/1hoWxHhVOWI/0.jpg)](https://youtu.be/1hoWxHhVOWI)
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1hoWxHhVOWI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+The full dissertation report can be found [here](/dissertation_report_final.pdf)
 
 To execute data collection pipeline see the following file: 
 
