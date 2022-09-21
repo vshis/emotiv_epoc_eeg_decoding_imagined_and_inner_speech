@@ -1,6 +1,8 @@
 # An investigation into decoding imagined and inner speech processes from commercial EEG devices
 Repository in support of the University of Bath Computer Science MSc dissertation
 
+The full dissertation report can be found [here](emotiv_epoc_eeg_decoding_imagined_and_inner_speech/dissertation_report_final.pdf)
+
 To execute data collection pipeline see the following file: 
 
 [Click here for information on how to execute the data collection pipeline](/installers/configuration.txt)
