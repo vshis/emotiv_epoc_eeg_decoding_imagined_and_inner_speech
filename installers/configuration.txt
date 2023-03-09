@@ -1,4 +1,4 @@
-To ensure software version mismatch, installers of the required software are provided in this repository.
+To avoid software version mismatch, installers of the required software are provided in this repository.
 
 --- Required software installation:
 1. Install Emotiv Launcher 
